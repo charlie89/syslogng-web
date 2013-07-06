@@ -5,16 +5,14 @@ angular.module('syslogng-web')
 		var cancelPoll = null;
 		
 		var pollFn = function() {
-		    cancelPoll = $timeout(function updateLogs() {
-		    	
-		    	$http.get('/api/messages').success(function (data) {
-					$scope.status = '';
-					$scope.messages = data.messages;
-					$scope.host = 'saturn.trd';
-				});
-		    	
-		    	cancelPoll = $timeout(updateLogs, 10000);
-		    }, 10000);
+			
+			$http.get('/api/messages').success(function (data) {
+				$scope.status = '';
+				$scope.messages = data.messages;
+				$scope.host = 'saturn.trd';
+			});
+			
+		    cancelPoll = $timeout(pollFn, 10000);
 		};
 		
 		$scope.$on('$destroy', function () {
