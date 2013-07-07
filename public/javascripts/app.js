@@ -10,7 +10,18 @@ angular.module('syslogng-web', [])
 		$routeProvider
 			.when('/', {
 				controller: 'MainController',
-				templateUrl: '/views/main'
+				templateUrl: '/views/main',
+				resolve: {
+					pkg: function ($http, $q) {
+						var deferred = $q.defer();
+						
+						$http.get('/package.json', function (data) {
+							deferred.resolve(data);
+						});
+						
+						return deferred.promise;
+					}
+				}
 			});
 	})
 	.run(function ($rootScope) {

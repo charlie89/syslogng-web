@@ -1,5 +1,6 @@
 div.page-header
-	h1 log messages for {{ host }}
+	h1 {{ host }} logs
+		small.pull-right {{ pkg.name }} {{ pkg.version }}
 	
 div.muted(ng-show="!messages.length") Waiting for log messages...
 

@@ -1,6 +1,7 @@
 angular.module('syslogng-web')
-	.controller('MainController', function ($scope, $log, $location, serverName) {
+	.controller('MainController', function ($scope, $log, $location, serverName, pkg) {
 		
+		$scope.pkg = pkg;
 		$scope.host = serverName;		
 		$scope.messages = [];
 		$scope.max = 10;
