@@ -30,7 +30,7 @@ if ('development' == app.get('env')) {
 
 // routes
 app.get('/', routes.index);
-app.get('/views/main', routes.main);
+app.get('views/main', routes.main);
 
 // socket.io to stream log messages
 var server = http.createServer(app);
