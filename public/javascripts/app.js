@@ -10,7 +10,7 @@ angular.module('syslogng-web', [])
 		$routeProvider
 			.when('/', {
 				controller: 'MainController',
-				templateUrl: '/views/main'
+				templateUrl: 'views/main'
 			});
 	})
 	.run(function ($rootScope) {
