@@ -4,7 +4,7 @@ html
 		title syslogng-web for #{db.host}
 		meta(name="viewport", content="width=device-width,initial-scale=1")
 		link(rel='stylesheet', href='//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css')
-		link(rel='stylesheet', href='stylesheets/style.css')
+		link(rel='stylesheet', href='/stylesheets/style.css')
 
 	body
 		div.container(ng-app='syslogng-web')
@@ -19,6 +19,6 @@ html
 		script(src='//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js')
 		script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js')
 		script(src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js')
-		script(src='socket.io/socket.io.js')
-		script(src='javascripts/app.js')
-		script(src='javascripts/controllers.js')
+		script(src='/socket.io/socket.io.js')
+		script(src='/javascripts/app.js')
+		script(src='/javascripts/controllers.js')
