@@ -1,0 +1,33 @@
+div.page-header
+	h1 log messages for {{ host }}
+	
+div.muted(ng-show="!messages.length") Waiting for log messages...
+
+div(ng-show="messages.length")
+
+	img.trigger(src="/images/icon-settings.png", ng-click="toggleSettings()")
+	
+	div#settings.well(ng-show="showSettings")	
+		h4 Settings
+		div Max results:
+			select.input-small(ng-model="max")
+				option(value="5") 5
+				option(value="10") 10
+				option(value="25") 25
+				option(value="50") 50
+				option(value="100") 100
+			
+	table.table.table-striped
+		thead
+			tr
+				td Date
+				td Program
+				td Priority
+				td Message
+		
+		tbody
+			tr(ng-repeat="message in filterMessages()", class="{{ getClass(message) }}")
+				td {{ message.DATE }}
+				td {{ message.PROGRAM }}
+				td {{ message.PRIORITY }}
+				td {{ message.MESSAGE }}
