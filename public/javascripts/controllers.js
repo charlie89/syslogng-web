@@ -1,12 +1,21 @@
 angular.module('syslogng-web')
-	.controller('MainController', function ($scope, $log, $location) {
+	.controller('MainController', function ($scope, $log, $location, serverName) {
 		
-		$scope.host = 'saturn.trd';		
+		$scope.host = serverName;		
 		$scope.messages = [];
-		$scope.max = 5;
+		$scope.max = 10;
+		
+		$scope.showSettings = false;
+		$scope.toggleSettings = function () {
+			$scope.showSettings = !$scope.showSettings;
+		};
 		
 		$scope.filterMessages = function () {
 			return _.first($scope.messages, $scope.max);
+		};
+		
+		$scope.getClass = function (message) {
+			return 'log-' + message.PRIORITY;
 		};
 		
 		var socket = io.connect('http://' + $location.host() + ':' + $location.port());
