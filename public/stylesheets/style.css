@@ -1,8 +1,21 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+footer {
+	text-align: center;
+	margin-top: 20px;
 }
 
-a {
-  color: #00B7FF;
+footer .container {
+	padding-top: 20px;
+	border-top: 1px #eee solid;
 }
+
+#settings {
+	margin-top: 20px;
+}
+
+.trigger { cursor: pointer; }
+
+.log-info td	{ color: #999; }
+.log-warn td	{ color: #c09853; background-color: #fcf8e3 !important; }
+.log-notice	td	{ }
+.log-err td, .log-crit td { color: #b94a48; background-color: #f2dede !important; }
+.log-crit td { font-weight: bold; }
