@@ -15,7 +15,7 @@ angular.module('syslogng-web', [])
 					pkg: function ($http, $q) {
 						var deferred = $q.defer();
 						
-						$http.get('/package.json', function (data) {
+						$http.get('/package.json').success(function (data) {
 							deferred.resolve(data);
 						});
 						
