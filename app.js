@@ -7,7 +7,8 @@ var express = require('express'),
 	http = require('http'), 
 	path = require('path'), 
 	mongodb = require('mongodb'), 
-	sio = require('socket.io');
+	sio = require('socket.io'),
+	config = require('./config');
 
 var app = express();
 
@@ -27,45 +28,46 @@ if ('development' == app.get('env')) {
 	app.use(express.errorHandler());
 }
 
+// routes
+app.get('/', routes.index);
+app.get('/views/main', routes.main);
+
+// socket.io to stream log messages
 var server = http.createServer(app);
 var io = sio.listen(server);
 
 io.sockets.on('connection', function(socket) {
 
-	var logsCollection = null;
-
-	mongodb.MongoClient.connect('mongodb://db.trd:27017/syslog', function(err, db) {
+	mongodb.MongoClient.connect('mongodb://' + config.db.host + ':' + config.db.port + '/' + config.db.name, function(err, db) {
 
 		if (err)
 			throw err;
 
-		logsCollection = db.collection('messages');
-
-		var stream = logsCollection.find({}, {
-			tailable : true,
-			await_data : true,
-			numberOfRetries : -1,
-			fields : {
-				'PROGRAM' : 1,
-				'PRIORITY' : 1,
-				'MESSAGE' : 1,
-				'DATE' : 1
-			},
-			sort : {
-				'$natural' : 1
-			}			
-		})
-		.stream()
-		.on('data', function(data) {
-			if (data) {
-				socket.emit('message', data);
-			}
-		});
+		db.collection(config.db.collection)
+			.find({}, {
+				tailable : true,
+				awaitdata : true,
+				numberOfRetries : -1,
+				fields : {
+					'PROGRAM' : 1,
+					'PRIORITY' : 1,
+					'MESSAGE' : 1,
+					'DATE' : 1
+				},
+				sort : {
+					'$natural' : 1
+				}			
+			})
+			.stream()
+			.on('data', function(data) {
+				if (data) {
+					socket.emit('message', data);
+				}
+			});
 	});
 });
 
-app.get('/', routes.index);
-
+// start the server
 server.listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));
 });

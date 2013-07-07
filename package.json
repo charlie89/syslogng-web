@@ -1,7 +1,10 @@
 {
-  "name": "application-name",
+  "name": "syslogng-web",
   "version": "0.0.1",
-  "private": true,
+  "homepage": "https://github.com/nlaplante/syslogng-web",
+  "repository": "https://github.com/nlaplante/syslogng-web.git",
+  "license": "BSD",
+  "private": false,
   "scripts": {
     "start": "node app.js"
   },
@@ -9,6 +12,7 @@
     "express": "3.3.3",
     "jade": "*",
     "mongodb": "~1.3.11",
-    "socket.io": "~0.9.16"
+    "socket.io": "~0.9.16",
+    "extend": "~1.1.3"
   }
 }
