@@ -52,7 +52,7 @@ io.sockets.on('connection', function(socket) {
 				'DATE' : 1
 			},
 			sort : {
-				'$natural' : -1
+				'$natural' : 1
 			}			
 		})
 		.stream()
