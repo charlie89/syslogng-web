@@ -1,7 +1,7 @@
 angular.module('syslogng-web', [])
 	
 	// server name to display on page
-	.value('serverName', 'saturn.trd')
+	.value('serverName', 'localhost')
 	
 	.config(function ($locationProvider, $routeProvider) {
 		$locationProvider.html5mode = false;
