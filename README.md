@@ -56,6 +56,6 @@ Running **syslogng-web** is as simple as running any other node.js application:
 node app.js
 ```
 
-To test if everything is working correctly, open a brower at http://your-server:3000. The log messages should appear 
+To test if everything is working correctly, open a brower at *http://your-server:3000*. The log messages should appear 
 shortly after. It is not necessary to reload the page to see changes, as **syslogng-web** uses socket.io to update
 its content as it gets logged.
