@@ -1,24 +1,20 @@
 angular.module('syslogng-web')
-	.controller('MainController', function ($scope, $log, $http, $timeout) {
-		$scope.status = 'Retrieving log messages...';
+	.controller('MainController', function ($scope, $log, $location) {
 		
-		var cancelPoll = null;
+		$scope.host = 'saturn.trd';		
+		$scope.messages = [];
+		$scope.max = 5;
 		
-		var pollFn = function() {
-			
-			$http.get('/api/messages').success(function (data) {
-				$scope.status = '';
-				$scope.messages = data.messages;
-				$scope.host = 'saturn.trd';
-			});
-			
-		    cancelPoll = $timeout(pollFn, 10000);
+		$scope.filterMessages = function () {
+			return _.first($scope.messages, $scope.max);
 		};
 		
-		$scope.$on('$destroy', function () {
-			$timeout.cancel(cancelPoll);
+		var socket = io.connect('http://' + $location.host() + ':' + $location.port());
+		
+		socket.on('message', function (data) {
+			$scope.$apply(function (s) {
+				s.status = '';				
+				s.messages.unshift(data);
+			});
 		});
-	
-		// Start polling
-		pollFn();
 	});
