@@ -41,6 +41,18 @@ install the dependencies:
 npm install
 ```
 
+Next you need to install web libraries. This is done using bower. If you don't have it already, install it using:
+
+```
+npm install -g bower
+```
+
+Then,
+
+```
+bower install
+```
+
 ### Configuration
 
 Next, you need to tell **syslogng-web** how to connect to the MongoDB databases which holds the log messages. 
