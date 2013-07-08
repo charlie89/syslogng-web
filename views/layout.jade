@@ -3,12 +3,12 @@ html
 	head
 		title syslogng-web for #{db.host}
 		meta(name="viewport", content="width=device-width,initial-scale=1")
-		link(rel='stylesheet', href='/components/bootstrap/css/bootstrap.min.css')
-		link(rel='stylesheet', href='/components/bootstrap/css/bootstrap-responsive.min.css')
+		link(rel='stylesheet', href='/components/bootstrap.css/css/bootstrap.min.css')
+		link(rel='stylesheet', href='/components/bootstrap.css/css/bootstrap-responsive.min.css')
 		link(rel='stylesheet', href='/stylesheets/style.css')
 
 	body
-		div.container(ng-app='syslogng-web')
+		div.container-fluid(ng-app='syslogng-web')
 			block content
 				
 		footer
@@ -17,7 +17,7 @@ html
 				&mdash; released under a #{license} license
 
 		script(src='/components/jquery/jquery.min.js')
-		script(src='/components/bootstrap/js/bootstrap.min.js')
+		script(src='/components/bootstrap.css/js/bootstrap.min.js')
 		script(src='/components/angular/angular.min.js')
 		script(src='/components/underscore/underscore-min.js')
 		script(src='/socket.io/socket.io.js')
