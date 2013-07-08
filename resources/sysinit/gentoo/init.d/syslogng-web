@@ -1,3 +1,5 @@
+#!/sbin/runscript
+
 depend() {
 	need net
 	use logger
