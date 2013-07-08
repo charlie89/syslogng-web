@@ -6,7 +6,7 @@ div.muted(ng-show="!messages.length") Waiting for log messages...
 
 div(ng-show="messages.length")
 
-	img.trigger(src="/images/icon-settings.png", ng-click="toggleSettings()")
+	img.trigger.pull-right.clearfix(src="/images/icon-settings.png", ng-click="toggleSettings()")
 	
 	div#settings.well(ng-show="showSettings")	
 		h4 Settings
@@ -17,7 +17,7 @@ div(ng-show="messages.length")
 				option(value="25") 25
 				option(value="50") 50
 				option(value="100") 100
-			
+				
 	table.table.table-striped
 		thead
 			tr
