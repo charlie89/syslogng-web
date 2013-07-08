@@ -13,6 +13,7 @@ start() {
 	PORT=${SYSLOGNGWEB_PORT} start-stop-daemon --background --start --make-pidfile \
 	--pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid \
 	--exec node ${SYSLOGNGWEB_DIR:-/usr/local/share/syslogng-web}/app.js
+
 }
 
 stop() {
