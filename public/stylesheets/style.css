@@ -8,14 +8,29 @@ footer .container {
 	border-top: 1px #eee solid;
 }
 
-#settings {
-	margin-top: 20px;
+.page-header {
+	margin-bottom: 0;
+	
 }
 
-.trigger { cursor: pointer; }
+#settings {
+	margin-top: 20px;	
+}
 
-.log-info td	{ color: #999; }
-.log-warn td	{ color: #c09853; background-color: #fcf8e3 !important; }
+.trigger { 
+	cursor: pointer;
+	text-align: right;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	margin-right: 10px; 
+}
+
+.ngColMenu {
+	background-color: #fff;
+}
+
+.log-info td	{ color: #999 !important; }
+.log-warn td	{ color: #c09853 !important; background-color: #fcf8e3 !important; }
 .log-notice	td	{ }
-.log-err td, .log-crit td { color: #b94a48; background-color: #f2dede !important; }
-.log-crit td { font-weight: bold; }
+.log-err td, .log-crit td { color: #b94a48 !important; background-color: #f2dede !important; }
+.log-crit td { font-weight: bold !important; }
