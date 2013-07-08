@@ -1,0 +1,8 @@
+
+
+SYSLOGNGWEB_DIR="/usr/local/share/syslogng-web"
+
+SYSLOGNGWEB_RUN="/var/run/syslogng-web"
+
+SYSLOGNGWEB_PORT="3000"
+
