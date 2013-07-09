@@ -5,18 +5,6 @@ div.page-header
 div.muted(ng-show="!messages.length") Waiting for log messages...
 
 div(ng-show="messages.length")
-
-	img.trigger.pull-right.clearfix(src="/images/icon-settings.png", ng-click="toggleSettings()")
-	
-	div#settings.well(ng-show="showSettings")	
-		h4 Settings
-		div Max results:
-			select.input-small(ng-model="max")
-				option(value="5") 5
-				option(value="10") 10
-				option(value="25") 25
-				option(value="50") 50
-				option(value="100") 100
 				
 	form.form-search
 		input.search-query(type="search", ng-model="search", placeholder="Realtime search...")
