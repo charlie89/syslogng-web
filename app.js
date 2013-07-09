@@ -8,7 +8,8 @@ var express = require('express'),
 	path = require('path'), 
 	mongodb = require('mongodb'), 
 	sio = require('socket.io'),
-	config = require('./config');
+	config = require('./config'),
+	pkg = require('./package');
 
 var app = express();
 
@@ -69,5 +70,5 @@ io.sockets.on('connection', function(socket) {
 
 // start the server
 server.listen(app.get('port'), function() {
-	console.log('Express server listening on port ' + app.get('port'));
+	console.log('syslogng-web ' + pkg.version + ' listening on port ' + app.get('port'));
 });
