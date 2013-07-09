@@ -25,6 +25,21 @@ for further information.
 
 When you are done editing */etc/syslog-ng/syslog-ng.conf*, restart the syslog-ng service.
 
+### Configuring the database
+
+By default the collection syslog-ng creates in MongoDB is not capped. However it needs to be for **syslogng-web** to work. To
+convert the existing collection to capped, issue the following statements in a mongodb shell:
+
+```
+use syslog
+db.runCommand({
+    convertToCapped: 'messages'
+    size: 100000
+    });
+```
+
+This will make the *messages* collection capped at 100 000 bytes. Use a size that better suits your need if you want.
+
 ### Installing syslogng-web
 
 Next you have to install a copy of **syslogng-web** on your server:
