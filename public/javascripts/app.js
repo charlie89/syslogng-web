@@ -1,7 +1,7 @@
 angular.module('syslogng-web', [])
 	
 	// server name to display on page
-	.value('serverName', 'localhost')
+	.value('serverName', 'saturn.trd')
 	
 	.config(function ($locationProvider, $routeProvider) {
 		$locationProvider.html5mode = false;
@@ -11,17 +11,7 @@ angular.module('syslogng-web', [])
 			.when('/', {
 				controller: 'MainController',
 				templateUrl: '/views/main',
-				resolve: {
-					pkg: function ($http, $q) {
-						var deferred = $q.defer();
-						
-						$http.get('/package.json').success(function (data) {
-							deferred.resolve(data);
-						});
-						
-						return deferred.promise;
-					}
-				}
+				reloadOnSearch: false
 			});
 	})
 	.run(function ($rootScope) {

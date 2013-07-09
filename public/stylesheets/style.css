@@ -8,11 +8,6 @@ footer .container {
 	border-top: 1px #eee solid;
 }
 
-.page-header {
-	margin-bottom: 0;
-	
-}
-
 #settings {
 	margin-top: 20px;	
 }
@@ -23,6 +18,12 @@ footer .container {
 	margin-bottom: 20px;
 	margin-top: 10px;
 	margin-right: 10px; 
+}
+
+em.highlight {
+	font-style: normal;
+	background-color: #ffffcc;
+	padding: 3px;
 }
 
 .ngColMenu {

@@ -18,6 +18,9 @@ div(ng-show="messages.length")
 				option(value="50") 50
 				option(value="100") 100
 				
+	form.form-search
+		input.search-query(type="search", ng-model="search", placeholder="Realtime search...")
+		
 	table.table.table-striped
 		thead
 			tr
@@ -28,7 +31,17 @@ div(ng-show="messages.length")
 		
 		tbody
 			tr(ng-repeat="message in filterMessages()", class="{{ getClass(message) }}")
-				td {{ message.DATE }}
-				td {{ message.PROGRAM }}
-				td {{ message.PRIORITY }}
-				td {{ message.MESSAGE }}
+				td(ng-bind-html-unsafe="message.DATE")
+				td(ng-bind-html-unsafe="message.PROGRAM | highlight:search")
+				td(ng-bind-html-unsafe="message.PRIORITY | highlight:search")
+				td(ng-bind-html-unsafe="message.MESSAGE | highlight:search")
+				
+				
+	div.pagination.pagination-centered
+		ul
+			li(ng-class="{'disabled': page == 1}")
+				a(ng-click="prevPage()") &laquo;
+			li(ng-repeat="i in pagesRange()", ng-class="{'active': i == page}")
+				a(ng-click="goToPage(i)") {{ i }}
+			li(ng-class="{'disabled': page == numPages}")
+				a(ng-click="nextPage()") &raquo;
