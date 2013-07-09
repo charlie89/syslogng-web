@@ -71,4 +71,5 @@ io.sockets.on('connection', function(socket) {
 // start the server
 server.listen(app.get('port'), function() {
 	console.log('syslogng-web ' + pkg.version + ' listening on port ' + app.get('port'));
+
 });
