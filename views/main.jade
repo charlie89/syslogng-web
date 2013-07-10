@@ -1,13 +1,16 @@
 div.page-header
 	h1 {{ host }} logs
 		small.pull-right {{ pkg.name }} {{ pkg.version }}
-	
-div.muted(ng-show="!messages.length") Waiting for log messages...
+
+form.form-search
+	input.search-query(type="search", ng-model="search", placeholder="Realtime search...")
+			
+div.status
+	span.label.label-info(ng-show="phase == phases.CONNECTING") Connecting to log provider...
+	span.label.label-success(ng-show="phase == phases.CONNECTED && !messages.length") Waiting for log messages...
+	span.label.label-danger(ng-show="phase == phases.ERROR") Error connecting to log provider...
 
 div(ng-show="messages.length")
-				
-	form.form-search
-		input.search-query(type="search", ng-model="search", placeholder="Realtime search...")
 		
 	table.table.table-striped
 		thead
