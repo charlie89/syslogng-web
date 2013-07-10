@@ -1,7 +1,7 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $log, $location, $timeout, serverName) {
-		
+	.controller('MainController', function ($scope, $log, $location, $timeout, serverName, socketEventHandler) {
+				
 		$scope.host = serverName;		
 		$scope.messages = [];
 		$scope.perPage = 10;
@@ -11,11 +11,16 @@ angular.module('syslogng-web')
 		$scope.filter = null;
 		
 		var searching = false;
-		var fuse = new Fuse($scope.messages, {
-			keys: ['PROGRAM', 'PRIORITY', 'MESSAGE'],
-			threshold: 0.00000001,
-			distance: 0.000000001
-		});
+		
+		function createFuse() {
+			return new Fuse($scope.messages, {
+				keys: ['PROGRAM', 'PRIORITY', 'MESSAGE'],
+				threshold: 0.00000001,
+				distance: 0.000000001
+			});
+		}
+		
+		var fuse = createFuse();
 		
 		$scope.showSettings = false;
 		$scope.toggleSettings = function () {
@@ -85,6 +90,10 @@ angular.module('syslogng-web')
 			}
 			
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
+			
+			if (newValue !== oldValue) {
+				fuse = createFuse();
+			}
 		}, true);
 		
 		$scope.$watch(function () {
@@ -125,9 +134,42 @@ angular.module('syslogng-web')
 			}, 200);
 		});
 		
-		var socket = io.connect('http://' + $location.host() + ':' + $location.port());
+		var socketPhases = {
+			CONNECTING: 0,
+			CONNECTED: 1,
+			DISCONNECTED: 2,
+			ERROR: 3
+		};
 		
-		socket.on('message', function (data) {
+		$scope.phases = socketPhases;
+		$scope.phase = null;
+		
+		$scope.$on('socket.connecting', function () {
+			$scope.phase = socketPhases.CONNECTING;
+		});
+		
+		$scope.$on('socket.reconnecting', function () {
+			$scope.phase = socketPhases.CONNECTING;
+		});
+		
+		$scope.$on('socket.connect', function () {
+			$scope.phase = socketPhases.CONNECTED;
+		});
+		
+		$scope.$on('socket.reconnect', function () {
+			$scope.phase = socketPhases.CONNECTED;
+		});
+		
+		$scope.$on('socket.error', function () {
+			$scope.phase = socketPhases.ERROR;
+		});
+		
+		$scope.$on('socket.disconnect', function () {
+			$scope.phase = socketPhases.DISCONNECTED;
+		});
+		
+		// Get log messages as they come
+		socketEventHandler.on('log', function (data) {
 			$scope.$apply(function (s) {
 				s.status = '';			
 				
@@ -148,6 +190,13 @@ angular.module('syslogng-web')
 					s.messages.unshift(data);
 				}
 				
+			});
+		});
+		
+		// Get initial list of messages
+		socketEventHandler.on('logs', function (data) {
+			$scope.$apply(function (s) {
+				s.messages = _.union(data, s.messages);
 			});
 		});
 	});
