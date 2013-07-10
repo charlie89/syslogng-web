@@ -9,7 +9,8 @@ var express = require('express'),
 	mongodb = require('mongodb'), 
 	sio = require('socket.io'),
 	config = require('./config'),
-	pkg = require('./package');
+	pkg = require('./package'),
+	extend = require('extend');
 
 var app = express();
 
@@ -37,39 +38,71 @@ app.get('/views/main', routes.main);
 var server = http.createServer(app);
 var io = sio.listen(server);
 
-io.sockets.on('connection', function(socket) {
+var connectionString = 'mongodb://' 
+	+ config.db.host 
+	+ ':' 
+	+ config.db.port 
+	+ '/' 
+	+ config.db.name; 
 
-	mongodb.MongoClient.connect('mongodb://' + config.db.host + ':' + config.db.port + '/' + config.db.name, function(err, db) {
-
-		if (err)
-			throw err;
-
-		db.collection(config.db.collection)
-			.find({}, {
-				tailable : true,
-				awaitdata : true,
-				numberOfRetries : -1,
-				fields : {
-					'PROGRAM' : 1,
-					'PRIORITY' : 1,
-					'MESSAGE' : 1,
-					'DATE' : 1
-				},
-				sort : {
-					'$natural' : 1
-				}			
-			})
-			.stream()
-			.on('data', function(data) {
-				if (data) {
-					socket.emit('message', data);
-				}
-			});
+mongodb.MongoClient.connect(connectionString, function(err, db) {
+	
+	if (err)
+		throw err;
+	
+	var findOptions = {
+		fields: {
+			'PROGRAM': 1,
+			'PRIORITY': 1,
+			'MESSAGE': 1,
+			'DATE': 1
+		},
+		sort: {
+			'$natural': 1
+		}
+	};
+	
+	// the syslog collection (or as configured)
+	var collection = db.collection(config.db.collection);
+	  
+	// the neverending tailable cursor
+	var cursor = collection.find({}, extend({}, findOptions, {
+			tailable : true,
+			awaitdata : true,
+			numberOfRetries : -1,
+		}));
+		
+	// open a stream on the neverending cursor
+	var stream = cursor.stream();
+		
+	stream.on('data', function(data) {
+		if (data) {
+			io.sockets.emit('log', data);
+		}
+	});
+		
+	stream.on('error', function (err) {
+		console.log(error);
+	});
+	
+	// per-connection socket events
+	io.sockets.on('connection', function (socket) {
+		
+		collection.find({}, findOptions)
+		.toArray(function (err, data) {
+			if (err) 
+				throw err;
+			
+			socket.emit('logs', data);
+		});
+		
+		socket.on('disconnect', function () {
+			
+		});
 	});
 });
 
 // start the server
 server.listen(app.get('port'), function() {
 	console.log('syslogng-web ' + pkg.version + ' listening on port ' + app.get('port'));
-
 });
