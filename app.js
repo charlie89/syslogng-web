@@ -18,7 +18,7 @@ var app = express();
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
-app.use(express.favicon());
+app.use(express.favicon(__dirname + '/public/images/favicon.ico'));
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(express.methodOverride());
@@ -82,7 +82,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	});
 		
 	stream.on('error', function (err) {
-		console.log(error);
+		console.log(err);
 	});
 	
 	// per-connection socket events
