@@ -1,65 +1,117 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $log, $location, $timeout, serverName, socketEventHandler) {
+	.controller('MainController', function ($scope, $log, $location, $timeout, $http, serverName, socketEventHandler) {
+		
+		$http.get('/package.json').success(function (data) {
+			$scope.pkg = data;
+		});
+		
+		$http.get('/config.json').success(function (data) {
+			$scope.config = data;
+		});
 				
+		// host name to display
 		$scope.host = serverName;		
+		
+		// log messages
 		$scope.messages = [];
-		$scope.perPage = 10;
-		$scope.numPages = 0;
-		$scope.page = $location.search().page ? parseInt($location.search().page) : 1;
-		$scope.search = null;
-		$scope.filter = null;
+		$scope.sortBy = null;
+		$scope.sortDirection = -1;
 		
-		var searching = false;
-		
-		function createFuse() {
-			return new Fuse($scope.messages, {
-				keys: ['PROGRAM', 'PRIORITY', 'MESSAGE'],
-				threshold: 0.00000001,
-				distance: 0.000000001
-			});
-		}
-		
-		var fuse = createFuse();
-		
-		$scope.showSettings = false;
-		$scope.toggleSettings = function () {
-			$scope.showSettings = !$scope.showSettings;
+		$scope.setSortField = function (field) {
+			$scope.sortBy = field;
 		};
 		
 		$scope.filterMessages = function () {
 			
+			var _msg = $scope.messages;
+			
+			// array bounds to get the correct slice
+			var start = ($scope.page - 1) * $scope.perPage,
+				end = start + $scope.perPage;
+			
+			// if no search filter specified, feed off directly from the message source
 			if ($scope.filter === null || $scope.filter === '') {
-				var start = ($scope.page - 1) * $scope.perPage,
-					end = start + $scope.perPage;
 				
-				return $scope.messages.slice(start, end);
+				$scope.numPages = Math.ceil(_msg.length / $scope.perPage);
+				
+				if ($scope.sortBy !== null) {
+					_msg = _.sortBy(_msg, $scope.sortBy);
+					
+					if ($scope.sortDirection === -1) {
+						$scope.sortDirection = 1;
+					}
+					else {
+						$scope.sortDirection = -1;
+						_msg.reverse();
+					}
+				}
+				
+				// if not in bounds, return empty array
+				if (start >= _msg.length || end >= _msg.length) {
+					$scope.filteredMessages = [];
+				}
+				
+				var slice = _msg.slice(start, end);
+				
+				$scope.filteredMessages = slice;
+				
+				return;
 			}
 			
-			// Search
+			// Search			
 			searching = true;
 			var result = fuse.search($scope.filter);
 			searching = false;
 			
 			$scope.numPages = Math.ceil(result.length / $scope.perPage);
+			$scope.searchResultNum = result.length;
 			
 			if ($scope.page > $scope.numPages) {
 				//$location.search('page', 1);
 			}
 			
-			var start = ($scope.page - 1) * $scope.perPage,
-				end = start + $scope.perPage,
-				slice = result.slice(start, end);
-			
-			return _.sortBy(slice, 'DATE').reverse();
+			$scope.filteredMessages = _.sortBy(result.slice(start, end), 'DATE').reverse();
 		};
+		
+		// pagination attributes
+		$scope.perPage = 25;
+		$scope.numPages = 0;
+		$scope.page = $location.search().page ? parseInt($location.search().page) : 1;
+		
+		// search attributes
+		var searching = false;
+		
+		$scope.search = null;
+		$scope.filter = null;
+		
+		function createFuse() {
+			return new Fuse($scope.messages, {
+				keys: ['PROGRAM', 'PRIORITY', 'MESSAGE'],
+				threshold: 0.00000001
+			});
+		}
+		
+		var fuse = createFuse();
+		
+		// socket status
+		var socketPhases = {
+				CONNECTING: 0,
+				CONNECTED: 1,
+				DISCONNECTED: 2,
+				ERROR: 3
+			};
+		
+		$scope.phases = socketPhases;
+		$scope.phase = null;
+		$scope.statusMessage = 'Initializing...';		
 		
 		$scope.getClass = function (message) {
 			return 'log-' + message.PRIORITY;
 		};
 		
 		$scope.pagesRange = function () {
-			return _.range(1, $scope.numPages + 1, 1);
+			return _.range(1, $scope.numPages, 1);
 		};
 		
 		$scope.goToPage = function (page) {
@@ -94,6 +146,8 @@ angular.module('syslogng-web')
 			if (newValue !== oldValue) {
 				fuse = createFuse();
 			}
+			
+			$scope.filterMessages();
 		}, true);
 		
 		$scope.$watch(function () {
@@ -109,6 +163,8 @@ angular.module('syslogng-web')
 			}
 			
 			$scope.page = parseInt(newValue.page);
+			
+			$scope.filterMessages();
 		}, true);
 		
 		// Don't trigger a search at each keystroke. Wait at least 200ms
@@ -117,6 +173,7 @@ angular.module('syslogng-web')
 		$scope.$watch("search", function (newValue, oldValue) {
 			
 			if (newValue === null || newValue === '') {
+				$scope.filter = null;
 				return;
 			}
 			
@@ -127,6 +184,7 @@ angular.module('syslogng-web')
 			searchCancel = $timeout(function searchTimer() {
 				if (!$timeout.cancel(searchCancel)) {
 					$scope.filter = newValue;
+					$scope.filterMessages();
 				}
 				else {
 					searchCancel = $timeout(searchTimer, 200);
@@ -134,42 +192,41 @@ angular.module('syslogng-web')
 			}, 200);
 		});
 		
-		var socketPhases = {
-			CONNECTING: 0,
-			CONNECTED: 1,
-			DISCONNECTED: 2,
-			ERROR: 3
-		};
-		
-		$scope.phases = socketPhases;
-		$scope.phase = null;
-		
 		$scope.$on('socket.connecting', function () {
 			$scope.phase = socketPhases.CONNECTING;
+			$scope.statusMessage = 'Connecting to log data source...';
 		});
 		
 		$scope.$on('socket.reconnecting', function () {
 			$scope.phase = socketPhases.CONNECTING;
+			$scope.statusMessage = 'Reconnecting to log data source...';
 		});
 		
 		$scope.$on('socket.connect', function () {
 			$scope.phase = socketPhases.CONNECTED;
+			$scope.statusMessage = null;
 		});
 		
 		$scope.$on('socket.reconnect', function () {
 			$scope.phase = socketPhases.CONNECTED;
+			$scope.statusMessage = null;
 		});
 		
 		$scope.$on('socket.error', function () {
 			$scope.phase = socketPhases.ERROR;
+			$scope.statusMessage = 'Error connecting to log data source...';
 		});
 		
 		$scope.$on('socket.disconnect', function () {
 			$scope.phase = socketPhases.DISCONNECTED;
+			$scope.statusMessage = 'Disconnected from log data source...';
 		});
 		
 		// Get log messages as they come
 		socketEventHandler.on('log', function (data) {
+			
+			$log.info(data);
+			
 			$scope.$apply(function (s) {
 				s.status = '';			
 				
@@ -183,11 +240,13 @@ angular.module('syslogng-web')
 						if (!newValue) {
 							stopWatch();
 							s.messages.unshift(data);
+							s.filterMessages();
 						}
 					});
 				}
 				else {
 					s.messages.unshift(data);
+					s.filterMessages();
 				}
 				
 			});
@@ -195,8 +254,12 @@ angular.module('syslogng-web')
 		
 		// Get initial list of messages
 		socketEventHandler.on('logs', function (data) {
+			
+			$log.info("Receiving full list of log messages (" + data.length + ")", data);
+			
 			$scope.$apply(function (s) {
-				s.messages = _.union(data, s.messages);
+				s.messages = data;
+				s.filterMessages();
 			});
 		});
 	});
