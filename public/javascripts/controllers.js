@@ -174,6 +174,7 @@ angular.module('syslogng-web')
 			
 			if (newValue === null || newValue === '') {
 				$scope.filter = null;
+				$scope.filterMessages();
 				return;
 			}
 			
