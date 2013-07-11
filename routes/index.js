@@ -13,5 +13,5 @@ exports.index = function(req, res) {
  * GET main view
  */
 exports.main = function(req, res) {
-	res.render('main');
+	res.render('main', extend({}, config, pkg));
 };
