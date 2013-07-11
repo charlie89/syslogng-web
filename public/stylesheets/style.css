@@ -8,6 +8,10 @@ footer .container {
 	border-top: 1px #eee solid;
 }
 
+h1 small {
+	line-height: 150%;	
+}
+
 #settings {
 	margin-top: 20px;	
 }
@@ -26,12 +30,20 @@ em.highlight {
 	padding: 3px;
 }
 
+thead tr th {
+	cursor: pointer;
+}
+
 .ngColMenu {
 	background-color: #fff;
 }
 
+.search-query {
+	margin-right: 20px;
+}
+
 .log-info td	{ color: #999 !important; }
-.log-warn td	{ color: #c09853 !important; background-color: #fcf8e3 !important; }
+.log-warning td	{ color: #c09853 !important; background-color: #fcf8e3 !important; }
 .log-notice	td	{ }
 .log-err td, .log-crit td { color: #b94a48 !important; background-color: #f2dede !important; }
 .log-crit td { font-weight: bold !important; }
