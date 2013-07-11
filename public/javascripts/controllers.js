@@ -60,6 +60,7 @@ angular.module('syslogng-web')
 			}
 			
 			// Search			
+			logger.log('MainController: searching for "' + $scope.filter + '"...');
 			searching = true;
 			var result = fuse.search($scope.filter);
 			searching = false;
@@ -87,8 +88,7 @@ angular.module('syslogng-web')
 		
 		function createFuse() {
 			return new Fuse($scope.messages, {
-				keys: ['PROGRAM', 'PRIORITY', 'MESSAGE'],
-				threshold: 0.00000001
+				keys: ['PROGRAM', 'PRIORITY', 'MESSAGE']
 			});
 		}
 		
@@ -184,7 +184,7 @@ angular.module('syslogng-web')
 			
 			searchCancel = $timeout(function searchTimer() {
 				if (!$timeout.cancel(searchCancel)) {
-					$scope.filter = newValue;
+					$scope.filter = $scope.search;
 					$scope.filterMessages();
 				}
 				else {
@@ -256,7 +256,7 @@ angular.module('syslogng-web')
 		// Get initial list of messages
 		socketEventHandler.on('logs', function (data) {
 			
-			logger.info("Receiving full list of log messages (" + data.length + ")");
+			logger.info("MainController::socketEventHandler: Receiving full list of log messages (" + data.length + ")");
 			
 			$scope.$apply(function (s) {
 				s.messages = data;
