@@ -4,7 +4,7 @@ angular.module('syslogng-web')
 		
 		var that = this;
 		
-		this.prefix = '';
+		this.prefix = null;
 		
 		function addPrefixIfNeeded (arr) {
 			if (that.prefix && that.prefix !== '') {
