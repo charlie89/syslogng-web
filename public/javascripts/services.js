@@ -1,5 +1,55 @@
 angular.module('syslogng-web')
 
+	.provider('logger', function () {
+		
+		var that = this;
+		
+		this.prefix = '';
+		
+		function addPrefixIfNeeded (arr) {
+			if (that.prefix && that.prefix !== '') {
+				arr.unshift(that.prefix + ':');
+			}
+		}
+		
+		this.$get = function ($log) {
+			
+			return {
+				error: function () {
+					
+					var args = _.toArray(arguments);
+					
+					addPrefixIfNeeded(args);
+					$log.error.apply($log, args);
+				},
+				
+				info: function () {
+					
+					var args = _.toArray(arguments);
+					
+					addPrefixIfNeeded(args);
+					$log.info.apply($log, args);
+				},
+				
+				log: function () {
+					
+					var args = _.toArray(arguments);
+					
+					addPrefixIfNeeded(args);
+					$log.log.apply($log, args);
+				},
+				
+				warn: function () {
+					
+					var args = _.toArray(arguments);
+					
+					addPrefixIfNeeded(args);
+					$log.warn.apply($log, args);
+				}
+			};
+		};
+	})
+	
 	.provider('socketEventHandler', function () {
 		
 		var DEFAULTS = {
@@ -17,7 +67,7 @@ angular.module('syslogng-web')
 		// Implementation
 		this.socket = null;
 		
-		this.$get = function ($location, $log, $rootScope) {
+		this.$get = function ($location, $rootScope, logger) {
 			
 			if (this.socket === null) {
 				
@@ -27,49 +77,49 @@ angular.module('syslogng-web')
 				this.socket = io.connect(cstring, angular.extend({}, DEFAULTS, this.options || {}));
 				
 				this.socket.on('connect', function () {
-					$log.info('socketEventHandler: socket connected successfully');
+					logger.info('socketEventHandler: socket connected successfully');
 					$rootScope.$broadcast('socket.connect');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('connecting', function () {
-					$log.info('socketEventHandler: attempting connection');
+					logger.info('socketEventHandler: attempting connection');
 					$rootScope.$broadcast('socket.connecting');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('disconnect', function () {
-					$log.info('socketEventHandler: disconnected');
+					logger.info('socketEventHandler: disconnected');
 					$rootScope.$broadcast('socket.disconnect');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('reconnect', function () {
-					$log.info('socketEventHandler: socket reconnected successfully');
+					logger.info('socketEventHandler: socket reconnected successfully');
 					$rootScope.$broadcast('socket.reconnect');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('reconnecting', function () {
-					$log.info('socketEventHandler: socket attempting reconnection');
+					logger.info('socketEventHandler: socket attempting reconnection');
 					$rootScope.$broadcast('socket.reconnecting');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('connect_fail', function () {
-					$log.error('socketEventHandler: could not connect');
+					logger.error('socketEventHandler: could not connect');
 					$rootScope.$broadcast('socket.connect_fail');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('reconnect_fail', function () {
-					$log.error('socketEventHandler: could not reconnect');
+					logger.error('socketEventHandler: could not reconnect');
 					$rootScope.$broadcast('socket.reconnect_fail');
 					$rootScope.$apply();
 				});
 				
 				this.socket.on('error', function () {
-					$log.error('socketEventHandler: an error occured');
+					logger.error('socketEventHandler: an error occured');
 					$rootScope.$broadcast('socket.error');
 					$rootScope.$apply();
 				});

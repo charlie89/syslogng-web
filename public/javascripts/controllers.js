@@ -1,6 +1,6 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $log, $location, $timeout, $http, serverName, socketEventHandler) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, serverName, socketEventHandler, logger) {
 		
 		$http.get('/package.json').success(function (data) {
 			$scope.pkg = data;
@@ -225,7 +225,7 @@ angular.module('syslogng-web')
 		// Get log messages as they come
 		socketEventHandler.on('log', function (data) {
 			
-			$log.info(data);
+			logger.info(data);
 			
 			$scope.$apply(function (s) {
 				s.status = '';			
@@ -255,7 +255,7 @@ angular.module('syslogng-web')
 		// Get initial list of messages
 		socketEventHandler.on('logs', function (data) {
 			
-			$log.info("Receiving full list of log messages (" + data.length + ")");
+			logger.info("Receiving full list of log messages (" + data.length + ")");
 			
 			$scope.$apply(function (s) {
 				s.messages = data;
