@@ -1,27 +1,26 @@
 div.page-header
-	h1 {{ host }} logs
+	h1 {{ config.db.host }} logs
 		small.pull-right {{ pkg.name }} {{ pkg.version }}
 
 form.form-search
-	input.search-query(type="search", ng-model="search", placeholder="Realtime search...")
+	input.search-query(type="search", ng-model="search", placeholder="Realtime search...") 
+	span.muted(ng-show="filter") {{ searchResultNum }} results for {{ filter }}
 			
 div.status
-	span.label.label-info(ng-show="phase == phases.CONNECTING") Connecting to log provider...
-	span.label.label-success(ng-show="phase == phases.CONNECTED && !messages.length") Waiting for log messages...
-	span.label.label-danger(ng-show="phase == phases.ERROR") Error connecting to log provider...
-
-div(ng-show="messages.length")
+	span.label(ng-class="{'label-info': phase == phases.CONNECTING, 'label-success': phase == phases.CONNECTED, 'label-danger': phase == phases.ERROR}",ng-show="statusMessage != null") {{ statusMessage }}
+	
+div(ng-show="phase == phases.CONNECTED")
 		
-	table.table.table-striped
+	table.table
 		thead
 			tr
-				td Date
-				td Program
-				td Priority
-				td Message
+				th(ng-click="setSortField('DATE')") Date
+				th(ng-click="setSortField('PROGRAM')") Program
+				th(ng-click="setSortField('PRIORITY')") Priority
+				th(ng-click="setSortField('MESSAGE')") Message
 		
 		tbody
-			tr(ng-repeat="message in filterMessages()", class="{{ getClass(message) }}")
+			tr.animated(ng-repeat="message in filteredMessages", class="{{ getClass(message) }}", ng-class="{'fadeIn': $index == 0}")
 				td(ng-bind-html-unsafe="message.DATE")
 				td(ng-bind-html-unsafe="message.PROGRAM | highlight:search")
 				td(ng-bind-html-unsafe="message.PRIORITY | highlight:search")
@@ -30,9 +29,13 @@ div(ng-show="messages.length")
 				
 	div.pagination.pagination-centered
 		ul
+			li(ng-class="{'disabled': page == 1, 'active': 1 == page}")
+				a(ng-click="goToPage(1)") &laquo;&laquo; 
 			li(ng-class="{'disabled': page == 1}")
 				a(ng-click="prevPage()") &laquo;
 			li(ng-repeat="i in pagesRange()", ng-class="{'active': i == page}")
 				a(ng-click="goToPage(i)") {{ i }}
-			li(ng-class="{'disabled': page == numPages}")
+			li(ng-class="{'disabled': page == numPages - 1}")
 				a(ng-click="nextPage()") &raquo;
+			li(ng-class="{'disabled': page == numPages - 1, 'active': page == numPages - 1}")
+				a(ng-click="goToPage(numPages - 1)") &raquo;&raquo;
