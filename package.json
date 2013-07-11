@@ -1,5 +1,6 @@
 {
   "name": "syslogng-web",
+  "description": "Webapp which shows syslog-ng logs from mongodb sources",
   "version": "0.0.2",
   "homepage": "https://github.com/nlaplante/syslogng-web",
   "repository": "https://github.com/nlaplante/syslogng-web.git",
