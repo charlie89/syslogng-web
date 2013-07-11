@@ -1,8 +1,10 @@
+# syslogng-web configuration
 
-
+# The directory in which the project has been installed
 SYSLOGNGWEB_DIR="/usr/local/share/syslogng-web"
 
+# The directory where the PID file will be stored
 SYSLOGNGWEB_RUN="/var/run/syslogng-web"
 
+# The port to listen on
 SYSLOGNGWEB_PORT="3000"
-
