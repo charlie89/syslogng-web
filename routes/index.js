@@ -1,4 +1,6 @@
-var config = require('../config'), pkg = require('../package'), extend = require('extend');
+var config = require('../config'), 
+	pkg = require('../package'), 
+	extend = require('extend');
 
 /*
  * GET home page.
