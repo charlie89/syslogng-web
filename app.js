@@ -58,7 +58,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 			'DATE': 1
 		},
 		sort: {
-			'$natural': 1
+			$natural: 1
 		}
 	};
 	
@@ -88,7 +88,11 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	// per-connection socket events
 	io.sockets.on('connection', function (socket) {
 		
-		collection.find({}, findOptions)
+		collection.find({}, extend({}, findOptions, {
+			sort: {
+				'DATE': -1
+			}
+		}))
 		.toArray(function (err, data) {
 			if (err) 
 				throw err;
@@ -97,7 +101,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 		});
 		
 		socket.on('disconnect', function () {
-			
+			console.log('socket disconnected');
 		});
 	});
 });
