@@ -27,8 +27,13 @@ angular.module('syslogng-web')
 			var _msg = $scope.messages;
 			
 			// array bounds to get the correct slice
-			var start = ($scope.page - 1) * $scope.perPage,
-				end = start + $scope.perPage;
+			var start = ($scope.page - 1) * $scope.perPage;
+			
+			if (start < 0) {
+				start = 0;
+			}
+			
+			var end = start + $scope.perPage;
 			
 			// if no search filter specified, feed off directly from the message source
 			if ($scope.filter === null || $scope.filter === '') {
@@ -111,7 +116,7 @@ angular.module('syslogng-web')
 		};
 		
 		$scope.pagesRange = function () {
-			return _.range(1, $scope.numPages, 1);
+			return _.range(1, $scope.numPages + 1, 1);
 		};
 		
 		$scope.goToPage = function (page) {
@@ -158,7 +163,16 @@ angular.module('syslogng-web')
 				return;
 			}
 			
+			
 			if (newValue.page === oldValue.page) {
+				return;
+			}
+			
+			if (newValue.page < 1) {
+				$location.search({
+					page: 1
+				});
+				
 				return;
 			}
 			

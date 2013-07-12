@@ -24,18 +24,17 @@ div(ng-show="phase == phases.CONNECTED")
 				td(ng-bind-html-unsafe="message.DATE")
 				td(ng-bind-html-unsafe="message.PROGRAM | highlight:search")
 				td(ng-bind-html-unsafe="message.PRIORITY | highlight:search")
-				td(ng-bind-html-unsafe="message.MESSAGE | highlight:search")
-				
+				td(ng-bind-html-unsafe="message.MESSAGE | highlight:search")				
 				
 	div.pagination.pagination-centered
 		ul
-			li(ng-class="{'disabled': page == 1, 'active': 1 == page}")
+			li(ng-class="{'disabled': page == 1}")
 				a(ng-click="goToPage(1)") &laquo;&laquo; 
 			li(ng-class="{'disabled': page == 1}")
 				a(ng-click="prevPage()") &laquo;
 			li(ng-repeat="i in pagesRange()", ng-class="{'active': i == page}")
 				a(ng-click="goToPage(i)") {{ i }}
-			li(ng-class="{'disabled': page == numPages - 1}")
+			li(ng-class="{'disabled': page == numPages}")
 				a(ng-click="nextPage()") &raquo;
-			li(ng-class="{'disabled': page == numPages - 1, 'active': page == numPages - 1}")
-				a(ng-click="goToPage(numPages - 1)") &raquo;&raquo;
+			li(ng-class="{'disabled': page == numPages}")
+				a(ng-click="goToPage(numPages)") &raquo;&raquo;
