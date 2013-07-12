@@ -8,6 +8,6 @@
     "bootstrap.css": "*",
     "fuse.js": "latest",
     "animate.css": "latest",
-    "fuzzy": "latest"
+    "fuzzy-search": "latest"
   }
 }
