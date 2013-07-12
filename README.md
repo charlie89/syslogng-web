@@ -56,13 +56,14 @@ install the dependencies:
 npm install
 ```
 
-Next you need to install web libraries. This is done using bower. If you don't have it already, install it using:
+Next you need to install client libraries. This is done using [Bower](https://github.com/bower/bower). 
+If you don't have it already, install it using:
 
 ```
 npm install -g bower
 ```
 
-Then,
+Then, install the required client libraries with
 
 ```
 bower install
@@ -86,3 +87,15 @@ node app.js
 To test if everything is working correctly, open a brower at *http://your-server:3000*. The log messages should appear 
 shortly after. It is not necessary to reload the page to see changes, as **syslogng-web** uses socket.io to update
 its content as it gets logged.
+
+#### RC system integration
+
+**syslogng-web** can be integrated in various RC systems. Since my main development machine is Gentoo Linux based,
+I included an init script for Gentoo Linux. To install the init script:
+
+```bash
+sudo cp -rv resources/sysinit/gentoo/* /etc
+```
+
+Next, edit */etc/conf.d/syslogng-web* and modify the variables in there to suit your configuration. The file is
+self-explaining so no need to document it here. It only assumes you cloned **syslogng-web** into */usr/local/share*.
