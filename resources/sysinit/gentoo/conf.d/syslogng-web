@@ -1,4 +1,5 @@
 # syslogng-web configuration
+# $Id$
 
 # The directory in which the project has been installed
 SYSLOGNGWEB_DIR="/usr/local/share/syslogng-web"
