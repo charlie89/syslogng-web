@@ -7,9 +7,9 @@ form.form-search
 	span.muted(ng-show="filter") {{ searchResultNum }} results for {{ search }}
 			
 div.status
-	span.label(ng-class="{'label-info': phase == phases.CONNECTING, 'label-success': phase == phases.CONNECTED, 'label-danger': phase == phases.ERROR}",ng-show="statusMessage != null") {{ statusMessage }}
+	span.label(ng-class="{'label-info': phase == phases.CONNECTING, 'label-success': phase == phases.CONNECT, 'label-danger': phase == phases.ERROR}",ng-show="statusMessage != null") {{ statusMessage }}
 	
-div(ng-show="phase == phases.CONNECTED")
+div(ng-show="phase == phases.CONNECT")
 		
 	table.table
 		thead
