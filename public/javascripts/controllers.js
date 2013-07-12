@@ -1,7 +1,9 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, serverName, socketEventHandler, logger) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, socketEventHandler, logger) {
 		
+		var MAX_MESSAGES_COUNT = 1000;
+		 
 		$http.get('/package.json').success(function (data) {
 			$scope.pkg = data;
 		});
@@ -9,9 +11,6 @@ angular.module('syslogng-web')
 		$http.get('/config.json').success(function (data) {
 			$scope.config = data;
 		});
-				
-		// host name to display
-		$scope.host = serverName;		
 		
 		// log messages
 		$scope.messages = [];
@@ -20,6 +19,7 @@ angular.module('syslogng-web')
 		
 		$scope.setSortField = function (field) {
 			$scope.sortBy = field;
+			$scope.filterMessages();
 		};
 		
 		$scope.filterMessages = function () {
@@ -83,7 +83,7 @@ angular.module('syslogng-web')
 		// pagination attributes
 		$scope.perPage = 25;
 		$scope.numPages = 0;
-		$scope.page = $location.search().page ? parseInt($location.search().page) : 1;
+		$scope.page = $location.search().page ? parseInt($location.search().page, 10) : 1;
 		
 		// search attributes
 		var searching = false;
@@ -99,15 +99,8 @@ angular.module('syslogng-web')
 		
 		var fuse = createFuse();
 		
-		// socket status
-		var socketPhases = {
-				CONNECTING: 0,
-				CONNECTED: 1,
-				DISCONNECTED: 2,
-				ERROR: 3
-			};
-		
-		$scope.phases = socketPhases;
+		// socket status	
+		$scope.phases = socketEventHandler.event;
 		$scope.phase = null;
 		$scope.statusMessage = 'Initializing...';		
 		
@@ -142,8 +135,17 @@ angular.module('syslogng-web')
 		};
 		
 		$scope.$watch("messages", function (newValue, oldValue) {
+			
 			if (newValue.length === oldValue.length) {
 				return;
+			}
+			
+			// Prevent a infinitely growing message list
+			if (newValue.length >= MAX_MESSAGES_COUNT) {
+				// pop out last element
+				do {
+					newValue.pop();
+				} while (newValue.length >= MAX_MESSAGES_COUNT);
 			}
 			
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
@@ -176,7 +178,7 @@ angular.module('syslogng-web')
 				return;
 			}
 			
-			$scope.page = parseInt(newValue.page);
+			$scope.page = parseInt(newValue.page, 10);
 			
 			$scope.filterMessages();
 		}, true);
@@ -207,41 +209,39 @@ angular.module('syslogng-web')
 			}, 200);
 		});
 		
-		$scope.$on('socket.connecting', function () {
-			$scope.phase = socketPhases.CONNECTING;
+		$scope.$on(socketEventHandler.event.CONNECTING, function () {
+			$scope.phase = socketEventHandler.event.CONNECTING;
 			$scope.statusMessage = 'Connecting to log data source...';
 		});
 		
-		$scope.$on('socket.reconnecting', function () {
-			$scope.phase = socketPhases.CONNECTING;
+		$scope.$on(socketEventHandler.event.RECONNECTING, function () {
+			$scope.phase = socketEventHandler.event.CONNECTING;
 			$scope.statusMessage = 'Reconnecting to log data source...';
 		});
 		
-		$scope.$on('socket.connect', function () {
-			$scope.phase = socketPhases.CONNECTED;
+		$scope.$on(socketEventHandler.event.CONNECT, function () {
+			$scope.phase = socketEventHandler.event.CONNECT;
 			$scope.statusMessage = null;
 		});
 		
-		$scope.$on('socket.reconnect', function () {
-			$scope.phase = socketPhases.CONNECTED;
+		$scope.$on(socketEventHandler.event.RECONNECT, function () {
+			$scope.phase = socketEventHandler.event.CONNECT;
 			$scope.statusMessage = null;
 		});
 		
-		$scope.$on('socket.error', function () {
-			$scope.phase = socketPhases.ERROR;
+		$scope.$on(socketEventHandler.event.ERROR, function () {
+			$scope.phase = socketEventHandler.event.ERROR;
 			$scope.statusMessage = 'Error connecting to log data source...';
 		});
 		
-		$scope.$on('socket.disconnect', function () {
-			$scope.phase = socketPhases.DISCONNECTED;
+		$scope.$on(socketEventHandler.event.DISCONNECT, function () {
+			$scope.phase = socketEventHandler.event.DISCONNECT;
 			$scope.statusMessage = 'Disconnected from log data source...';
 		});
 		
 		// Get log messages as they come
 		socketEventHandler.on('log', function (data) {
-			
-			logger.info(data);
-			
+						
 			$scope.$apply(function (s) {
 				s.status = '';			
 				
