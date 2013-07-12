@@ -41,12 +41,12 @@ var io = sio.listen(server);
 // Reduce log messages in production environment (WARN & ERROR)
 io.set('log level', process.env.NODE_ENV === 'production' ? 1 : 3);
 
-var connectionString = 'mongodb://' 
-	+ config.db.host 
-	+ ':' 
-	+ config.db.port 
-	+ '/' 
-	+ config.db.name; 
+var connectionString = 'mongodb://' + 
+	config.db.host + 
+	':' + 
+	config.db.port + 
+	'/' + 
+	config.db.name;
 
 mongodb.MongoClient.connect(connectionString, function(err, db) {
 	
@@ -67,7 +67,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	
 	// the syslog collection (or as configured)
 	var collection = db.collection(config.db.collection);
-	  
+
 	// the neverending tailable cursor
 	var cursor = collection.find({}, extend({}, findOptions, {
 			tailable : true,
