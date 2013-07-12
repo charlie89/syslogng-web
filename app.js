@@ -38,6 +38,9 @@ app.get('/views/main', routes.main);
 var server = http.createServer(app);
 var io = sio.listen(server);
 
+// Reduce log messages in production environment (WARN & ERROR)
+io.set('log level', process.env.NODE_ENV === 'production' ? 1 : 3);
+
 var connectionString = 'mongodb://' 
 	+ config.db.host 
 	+ ':' 
