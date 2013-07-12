@@ -6,5 +6,8 @@ SYSLOGNGWEB_DIR="/usr/local/share/syslogng-web"
 # The directory where the PID file will be stored
 SYSLOGNGWEB_RUN="/var/run/syslogng-web"
 
+# The log file to use
+SYSLOGNGWEB_LOG="/var/log/syslogng-web.log"
+
 # The port to listen on
 SYSLOGNGWEB_PORT="3000"

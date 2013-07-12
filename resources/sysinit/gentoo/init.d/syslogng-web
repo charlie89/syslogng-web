@@ -10,13 +10,17 @@ start() {
 	checkpath -d -m 0750 ${SYSLOGNGWEB_RUN}
 		
 	ebegin "Starting ${SVCNAME}"
+	
 	PORT=${SYSLOGNGWEB_PORT} start-stop-daemon --background --start --make-pidfile \
 	--pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid \
-	--exec node ${SYSLOGNGWEB_DIR:-/usr/local/share/syslogng-web}/app.js
+	--exec node ${SYSLOGNGWEB_DIR:-/usr/local/share/syslogng-web}/app.js >> ${SYSLOGNGWEB_LOG:-/var/log/syslogng-web.log}
+	
+	eend $?
 
 }
 
 stop() {
 	ebegin "Stopping ${SVCNAME}"
 	start-stop-daemon --stop --pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid
+	eend $?
 }
