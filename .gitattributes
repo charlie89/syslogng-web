@@ -1,1 +1,2 @@
-resources/sysinit/gentoo/**/* ident
+resources/sysinit/gentoo/conf.d/syslogng-web ident
+resources/sysinit/gentoo/init.d/syslogng-web ident
