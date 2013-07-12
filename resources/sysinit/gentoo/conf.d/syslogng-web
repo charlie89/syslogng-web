@@ -11,3 +11,6 @@ SYSLOGNGWEB_LOG="/var/log/syslogng-web.log"
 
 # The port to listen on
 SYSLOGNGWEB_PORT="3000"
+
+# Environment
+SYSLOGNGWEB_ENV="production"

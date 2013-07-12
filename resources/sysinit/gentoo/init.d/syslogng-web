@@ -11,9 +11,11 @@ start() {
 		
 	ebegin "Starting ${SVCNAME}"
 	
-	PORT=${SYSLOGNGWEB_PORT} start-stop-daemon --background --start --make-pidfile \
-	--pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid \
-	--exec "node ${SYSLOGNGWEB_DIR:-/usr/local/share/syslogng-web}/app.js >> ${SYSLOGNGWEB_LOG:-/var/log/syslogng-web.log} 2>>&1"
+	PORT=${SYSLOGNGWEB_PORT:-3000} NODE_ENV=${SYSLOGNGWEB_ENV:-production} start-stop-daemon \
+		--background --start --make-pidfile \
+		--pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid \
+		--stdout ${SYSLOGNGWEB_LOG:-/var/log/syslogng-web.log} \
+		--exec node ${SYSLOGNGWEB_DIR:-/usr/local/share/syslogng-web}/app.js
 	
 	eend $?
 
