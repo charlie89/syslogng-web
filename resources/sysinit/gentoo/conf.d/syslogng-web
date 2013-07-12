@@ -15,3 +15,4 @@ SYSLOGNGWEB_PORT="3000"
 
 # Environment
 SYSLOGNGWEB_ENV="production"
+

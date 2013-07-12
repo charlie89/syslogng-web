@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# syslogng-web init script
 # $Id$
 
 depend() {
