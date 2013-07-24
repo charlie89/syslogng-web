@@ -2,10 +2,10 @@
 # $Id$
 
 # The directory in which the project has been installed
-SYSLOGNGWEB_DIR="/usr/local/share/syslogng-web"
+SYSLOGNGWEB_DIR="/opt/syslogng-web"
 
 # The directory where the PID file will be stored
-SYSLOGNGWEB_RUN="/var/run/syslogng-web"
+SYSLOGNGWEB_RUN="/var/run"
 
 # The log file to use
 SYSLOGNGWEB_LOG="/var/log/syslogng-web.log"

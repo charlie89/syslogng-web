@@ -14,9 +14,9 @@ start() {
 	
 	PORT=${SYSLOGNGWEB_PORT:-3000} NODE_ENV=${SYSLOGNGWEB_ENV:-production} start-stop-daemon \
 		--background --start --make-pidfile \
-		--pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid \
+		--pidfile ${SYSLOGNGWEB_RUN:-/var/run}/${SVCNAME}.pid \
 		--stdout ${SYSLOGNGWEB_LOG:-/var/log/syslogng-web.log} \
-		--exec node ${SYSLOGNGWEB_DIR:-/usr/local/share/syslogng-web}/app.js
+		--exec node ${SYSLOGNGWEB_DIR:-/opt/syslogng-web}/app.js
 	
 	eend $?
 
@@ -24,6 +24,6 @@ start() {
 
 stop() {
 	ebegin "Stopping ${SVCNAME}"
-	start-stop-daemon --stop --pidfile ${SYSLOGNGWEB_RUN:-/var/run/syslogng-web}/${SVCNAME}.pid
+	start-stop-daemon --stop --pidfile ${SYSLOGNGWEB_RUN:-/var/run}/${SVCNAME}.pid
 	eend $?
 }
