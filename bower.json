@@ -8,6 +8,7 @@
     "bootstrap.css": "*",
     "fuse.js": "latest",
     "animate.css": "latest",
-    "fuzzy-search": "latest"
+    "fuzzy-search": "latest",
+    "lunr.js": "~0.4.1"
   }
 }

@@ -1,16 +1,11 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, socketEventHandler, logger) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, socketEventHandler, logger, config, pkg) {
 		
 		var MAX_MESSAGES_COUNT = 1000;
 		 
-		$http.get('/package.json').success(function (data) {
-			$scope.pkg = data;
-		});
-		
-		$http.get('/config.json').success(function (data) {
-			$scope.config = data;
-		});
+		$scope.pkg = pkg;
+		$scope.config = config;
 		
 		// log messages
 		$scope.messages = [];
@@ -67,7 +62,18 @@ angular.module('syslogng-web')
 			// Search			
 			logger.log('MainController: searching for "' + $scope.filter + '"...');
 			searching = true;
-			var result = fuse.search($scope.filter);
+			var result = (function () {
+				var arr = [];
+				var refs = index.search($scope.filter);
+				
+				angular.forEach(refs, function (v) {
+					arr.push(_.first(_.where($scope.messages, {
+						_id: v.ref
+					})));
+				});
+				
+				return arr;
+			}());
 			searching = false;
 			
 			$scope.numPages = Math.ceil(result.length / $scope.perPage);
@@ -98,6 +104,19 @@ angular.module('syslogng-web')
 		}
 		
 		var fuse = createFuse();
+		
+		var index = lunr(function () {
+			this.field('PROGRAM');
+			this.field('PRIORITY');
+			this.field('MESSAGE', { boost: 10 });
+			this.ref('_id');
+		});
+		
+		function feedIndex() {
+			angular.forEach($scope.messages, function (v) {
+				index.add(v);
+			});
+		}
 		
 		// socket status	
 		$scope.phases = socketEventHandler.event;
@@ -151,7 +170,10 @@ angular.module('syslogng-web')
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
 			
 			if (newValue !== oldValue) {
-				fuse = createFuse();
+				for (var i = 0; i < Math.abs((oldValue.length || 0) - (newValue.length || 0)); i++) {
+					logger.info("adding log message to search index", $scope.messages[i]);
+					index.add($scope.messages[i]);
+				}
 			}
 			
 			$scope.filterMessages();
