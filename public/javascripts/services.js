@@ -147,6 +147,7 @@ angular.module('syslogng-web')
 				 * @returns
 				 */
 				on: function (eventName, handler) {
+					logger.info('socketEventHandler: registering callback for "' + eventName + '" event');
 					that.socket.on(eventName, handler);
 				},
 				
@@ -157,6 +158,7 @@ angular.module('syslogng-web')
 				 * @returns
 				 */
 				emit: function (eventName, data) {
+					logger.info('socketEventHandler: emitting event "' + eventName + '"');
 					that.socket.emit(eventName, data);
 				}
 			};

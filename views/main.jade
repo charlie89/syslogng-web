@@ -5,6 +5,8 @@ div.page-header
 form.form-search
 	input.search-query(type="search", ng-model="search", placeholder="Realtime search...") 
 	span.muted(ng-show="filter") {{ searchResultNum }} results for {{ search }}
+	button.btn.btn-danger(ng-click="clear()", ng-hide="!messages.length") Clear all
+	button.btn(ng-click="refresh()", ng-hide="messages.length") Refresh
 			
 div.status
 	span.label(ng-class="{'label-info': phase == phases.CONNECTING, 'label-success': phase == phases.CONNECT, 'label-danger': phase == phases.ERROR}",ng-show="statusMessage != null") {{ statusMessage }}

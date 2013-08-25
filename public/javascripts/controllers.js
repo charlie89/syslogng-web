@@ -1,6 +1,6 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, socketEventHandler, logger, config, pkg) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
 		
 		var MAX_MESSAGES_COUNT = 1000;
 		 
@@ -103,14 +103,18 @@ angular.module('syslogng-web')
 			});
 		}
 		
+		function createIndex() {
+			return lunr(function () {
+				this.field('PROGRAM');
+				this.field('PRIORITY');
+				this.field('MESSAGE', { boost: 10 });
+				this.ref('_id');
+			});
+		}
+		
 		var fuse = createFuse();
 		
-		var index = lunr(function () {
-			this.field('PROGRAM');
-			this.field('PRIORITY');
-			this.field('MESSAGE', { boost: 10 });
-			this.ref('_id');
-		});
+		var index = createIndex();
 		
 		function feedIndex() {
 			angular.forEach($scope.messages, function (v) {
@@ -169,9 +173,11 @@ angular.module('syslogng-web')
 			
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
 			
-			if (newValue !== oldValue) {
-				for (var i = 0; i < Math.abs((oldValue.length || 0) - (newValue.length || 0)); i++) {
-					logger.info("adding log message to search index", $scope.messages[i]);
+			if (newValue !== oldValue && newValue.length) {
+				
+				logger.info('adding ' + $scope.messages.length + ' log messages to search index');
+				
+				for (var i = 0; i < Math.abs((oldValue.length || 0) - (newValue.length || 0)); i++) {					
 					index.add($scope.messages[i]);
 				}
 			}
@@ -261,8 +267,32 @@ angular.module('syslogng-web')
 			$scope.statusMessage = 'Disconnected from log data source...';
 		});
 		
-		// Get log messages as they come
-		socketEventHandler.on('log', function (data) {
+		$scope.clear = function () {
+			
+			logger.info("clearing all log messages");
+			
+			$scope.search = null;
+			$scope.filter = null;
+			$scope.messages = [];
+			$scope.page = 1;
+			index = createIndex();
+			$scope.filterMessages();
+		};
+		
+		$scope.refresh = function () {
+			
+			logger.info("refreshing log messages");
+			
+			mongoLogMessageSource.fetchAll().then(function (data) {
+				$scope.messages = data;
+				$scope.filterMessages();
+			}, function (error) {
+				logger.error(error);
+			});
+		};
+		
+		// Get log messages as they come		
+		mongoLogMessageSource.messageReceived(function (data) {
 						
 			$scope.$apply(function (s) {
 				s.status = '';			
@@ -289,8 +319,15 @@ angular.module('syslogng-web')
 			});
 		});
 		
+		mongoLogMessageSource.fetchAll().then(function (data) {
+			$scope.messages = data;
+			$scope.filterMessages();
+		}, function (error) {
+			logger.error(error);
+		});
+		
 		// Get initial list of messages
-		socketEventHandler.on('logs', function (data) {
+		/*socketEventHandler.on('logs', function (data) {
 			
 			logger.info("MainController::socketEventHandler: Receiving full list of log messages (" + data.length + ")");
 			
@@ -298,5 +335,5 @@ angular.module('syslogng-web')
 				s.messages = data;
 				s.filterMessages();
 			});
-		});
+		});*/
 	});
