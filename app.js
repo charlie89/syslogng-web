@@ -88,6 +88,21 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 		console.log(err);
 	});
 	
+	io.sockets.on('fetchAll', function (socket) {
+		collection.find({}, extend({}, findOptions, {
+			sort: {
+				'DATE': -1
+			}
+		}))
+		.toArray(function (err, data) {
+			if (err) 
+				throw err;
+			
+			socket.emit('logs', data);
+		});
+	});
+	
+	
 	// per-connection socket events
 	io.sockets.on('connection', function (socket) {
 		
