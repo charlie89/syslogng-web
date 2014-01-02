@@ -46,3 +46,52 @@ thead tr th {
 .log-notice	td	{ }
 .log-err td, .log-crit td { color: #b94a48 !important; background-color: #f2dede !important; }
 .log-crit td { font-weight: bold !important; }
+
+.space-top {
+	margin-top: 20px;
+}
+
+/* animations */
+.animate-repeat {
+/*  line-height:40px;*/
+  box-sizing:border-box;
+}
+ 
+.animate-repeat.ng-leave.ng-leave-active,
+.animate-repeat.ng-move,
+.animate-repeat.ng-enter {
+  
+
+}
+
+.animate-repeat.ng-leave.ng-leave-active:first-child,
+.animate-repeat.ng-move:first-child,
+.animate-repeat.ng-enter:first-child {
+	opacity: 0;	
+	background-color: #FFEC8B;
+}
+ 
+.animate-repeat.ng-leave,
+.animate-repeat.ng-move.ng-move-active,
+.animate-repeat.ng-enter.ng-enter-active {
+
+
+}
+
+.animate-repeat.ng-leave:first-child,
+.animate-repeat.ng-move.ng-move-active:first-child,
+.animate-repeat.ng-enter.ng-enter-active:first-child {
+  opacity: 1;	
+  background-color: inherit;
+}
+
+.animate-repeat.ng-enter, 
+.animate-repeat.ng-leave, 
+.animate-repeat.ng-move  {
+	
+	-webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.2s;
+	-webkit-transition: background-color cubic-bezier(0.250, 0.460, 0.450, 0.940) 1.5s;
+
+	transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.2s;
+	transition: background-color cubic-bezier(0.250, 0.460, 0.450, 0.940) 1.5s;
+}
