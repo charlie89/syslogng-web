@@ -58,7 +58,12 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 			'PROGRAM': 1,
 			'PRIORITY': 1,
 			'MESSAGE': 1,
-			'DATE': 1
+			'DATE': 1,
+			'HOST': 1,
+			'HOST_FROM': 1,
+			'SOURCEIP': 1,
+			'SEQNUM': 1,
+			'TAGS': 1
 		},
 		sort: {
 			$natural: 1
