@@ -2,16 +2,19 @@ div.page-header
 	h1 {{ config.db.host }} logs
 		small.pull-right {{ pkg.name }} {{ pkg.version }}
 
-form.form-search
-	input.search-query(type="search", ng-model="search", placeholder="Realtime search...") 
-	span.muted(ng-show="filter") {{ searchResultNum }} results for {{ search }}
-	button.btn.btn-danger(ng-click="clear()", ng-hide="!messages.length") Clear all
-	button.btn(ng-click="refresh()", ng-hide="messages.length") Refresh
+form.form-inline(role='form')
+	div.row
+		div.form-group.col-xs-4
+			input.form-control(type="search", ng-model="search", placeholder="Realtime search...")
+		div.form-group.col-xs-8
+			div.pull-right
+				button.btn.btn-danger(ng-click="clear()", ng-hide="!messages.length") Clear all
+				button.btn(ng-click="refresh()", ng-hide="messages.length") Refresh
 			
-div.status
+div.status.space-top
 	span.label(ng-class="{'label-info': phase == phases.CONNECTING, 'label-success': phase == phases.CONNECT, 'label-danger': phase == phases.ERROR}",ng-show="statusMessage != null") {{ statusMessage }}
 	
-div(ng-show="phase == phases.CONNECT")
+div.space-top(ng-show="phase == phases.CONNECT")
 		
 	table.table
 		thead
@@ -22,21 +25,21 @@ div(ng-show="phase == phases.CONNECT")
 				th(ng-click="setSortField('MESSAGE')") Message
 		
 		tbody
-			tr.animated(ng-repeat="message in filteredMessages", class="{{ getClass(message) }}", ng-class="{'fadeIn': $index == 0}")
-				td(ng-bind-html-unsafe="message.DATE")
-				td(ng-bind-html-unsafe="message.PROGRAM | highlight:search")
-				td(ng-bind-html-unsafe="message.PRIORITY | highlight:search")
-				td(ng-bind-html-unsafe="message.MESSAGE | highlight:search")				
+			tr(ng-repeat="message in messages | filter:search | from:(page * perPage) | limitTo:perPage", class="{{ getClass(message) }} animate-repeat")
+				td(ng-bind="message.DATE")
+				td(ng-bind-html="message.PROGRAM | highlight:search")
+				td(ng-bind-html="message.PRIORITY | highlight:search")
+				td(ng-bind-html="message.MESSAGE | highlight:search")				
 				
-	div.pagination.pagination-centered
-		ul
-			li(ng-class="{'disabled': page == 1}")
-				a(ng-click="goToPage(1)") &laquo;&laquo; 
-			li(ng-class="{'disabled': page == 1}")
-				a(ng-click="prevPage()") &laquo;
-			li(ng-repeat="i in pagesRange()", ng-class="{'active': i == page}")
-				a(ng-click="goToPage(i)") {{ i }}
-			li(ng-class="{'disabled': page == numPages}")
-				a(ng-click="nextPage()") &raquo;
-			li(ng-class="{'disabled': page == numPages}")
-				a(ng-click="goToPage(numPages)") &raquo;&raquo;
+	
+	ul.pagination
+		li(ng-class="{'disabled': page == 1}")
+			a(ng-click="goToPage(1)") &laquo;&laquo; 
+		li(ng-class="{'disabled': page == 1}")
+			a(ng-click="prevPage()") &laquo;
+		li(ng-repeat="i in pagesRange()", ng-class="{'active': i == page}")
+			a(ng-click="goToPage(i)") {{ i }}
+		li(ng-class="{'disabled': page == numPages}")
+			a(ng-click="nextPage()") &raquo;
+		li(ng-class="{'disabled': page == numPages}")
+			a(ng-click="goToPage(numPages)") &raquo;&raquo;
