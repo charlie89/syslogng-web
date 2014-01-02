@@ -9,118 +9,24 @@ angular.module('syslogng-web')
 		
 		// log messages
 		$scope.messages = [];
-		$scope.sortBy = null;
-		$scope.sortDirection = -1;
+		$scope.sortBy = 'DATE';
+
+		// Sorting (WIP)
+		$scope.sortReverse = false;
 		
 		$scope.setSortField = function (field) {
 			$scope.sortBy = field;
-			$scope.filterMessages();
+			$scope.sortReverse = !$scope.sortReverse;
+			logger.info('Sorting by ', $scope.sortBy, $scope.sortReverse);
 		};
-		
-		$scope.filterMessages = function () {
-			
-			var _msg = $scope.messages;
-			
-			// array bounds to get the correct slice
-			var start = ($scope.page - 1) * $scope.perPage;
-			
-			if (start < 0) {
-				start = 0;
-			}
-			
-			var end = start + $scope.perPage;
-			
-			// if no search filter specified, feed off directly from the message source
-			if ($scope.filter === null || $scope.filter === '') {
-				
-				$scope.numPages = Math.ceil(_msg.length / $scope.perPage);
-				
-				if ($scope.sortBy !== null) {
-					_msg = _.sortBy(_msg, $scope.sortBy);
-					
-					if ($scope.sortDirection === -1) {
-						$scope.sortDirection = 1;
-					}
-					else {
-						$scope.sortDirection = -1;
-						_msg.reverse();
-					}
-				}
-				
-				// if not in bounds, return empty array
-				if (start >= _msg.length || end >= _msg.length) {
-					$scope.filteredMessages = [];
-				}
-				
-				var slice = _msg.slice(start, end);
-				
-				$scope.filteredMessages = slice;
-				
-				return;
-			}
-			
-			// Search			
-			logger.log('MainController: searching for "' + $scope.filter + '"...');
-			searching = true;
-			var result = (function () {
-				var arr = [];
-				var refs = index.search($scope.filter);
-				
-				angular.forEach(refs, function (v) {
-					arr.push(_.first(_.where($scope.messages, {
-						_id: v.ref
-					})));
-				});
-				
-				return arr;
-			}());
-			searching = false;
-			
-			$scope.numPages = Math.ceil(result.length / $scope.perPage);
-			$scope.searchResultNum = result.length;
-			
-			if ($scope.page > $scope.numPages) {
-				//$location.search('page', 1);
-			}
-			
-			$scope.filteredMessages = _.sortBy(result.slice(start, end), 'DATE').reverse();
-		};
-		
+
 		// pagination attributes
 		$scope.perPage = 25;
 		$scope.numPages = 0;
 		$scope.page = $location.search().page ? parseInt($location.search().page, 10) : 1;
 		
-		// search attributes
-		var searching = false;
-		
+		// search attributes		
 		$scope.search = null;
-		$scope.filter = null;
-		
-		function createFuse() {
-			return new Fuse($scope.messages, {
-				keys: ['PROGRAM', 'PRIORITY', 'MESSAGE']
-			});
-		}
-		
-		function createIndex() {
-			return lunr(function () {
-				this.field('PROGRAM');
-				this.field('PRIORITY');
-				this.field('MESSAGE', { boost: 10 });
-				this.ref('_id');
-			});
-		}
-		
-		var fuse = createFuse();
-		
-		var index = createIndex();
-		
-		function feedIndex() {
-			angular.forEach($scope.messages, function (v) {
-				index.add(v);
-			});
-		}
 		
 		// socket status	
 		$scope.phases = socketEventHandler.event;
@@ -172,17 +78,6 @@ angular.module('syslogng-web')
 			}
 			
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
-			
-			if (newValue !== oldValue && newValue.length) {
-				
-				logger.info('adding ' + $scope.messages.length + ' log messages to search index');
-				
-				for (var i = 0; i < Math.abs((oldValue.length || 0) - (newValue.length || 0)); i++) {					
-					index.add($scope.messages[i]);
-				}
-			}
-			
-			$scope.filterMessages();
 		}, true);
 		
 		$scope.$watch(function () {
@@ -192,8 +87,7 @@ angular.module('syslogng-web')
 				$scope.page = 1;
 				return;
 			}
-			
-			
+
 			if (newValue.page === oldValue.page) {
 				return;
 			}
@@ -207,35 +101,7 @@ angular.module('syslogng-web')
 			}
 			
 			$scope.page = parseInt(newValue.page, 10);
-			
-			$scope.filterMessages();
 		}, true);
-		
-		// Don't trigger a search at each keystroke. Wait at least 200ms
-		// before checking if something changed. If not, then trigger the search.
-		var searchCancel = null;
-		$scope.$watch("search", function (newValue, oldValue) {
-			
-			if (newValue === null || newValue === '') {
-				$scope.filter = null;
-				$scope.filterMessages();
-				return;
-			}
-			
-			if (newValue === oldValue) {
-				return;
-			}
-			
-			searchCancel = $timeout(function searchTimer() {
-				if (!$timeout.cancel(searchCancel)) {
-					$scope.filter = $scope.search;
-					$scope.filterMessages();
-				}
-				else {
-					searchCancel = $timeout(searchTimer, 200);
-				}
-			}, 200);
-		});
 		
 		$scope.$on(socketEventHandler.event.CONNECTING, function () {
 			$scope.phase = socketEventHandler.event.CONNECTING;
@@ -272,11 +138,8 @@ angular.module('syslogng-web')
 			logger.info("clearing all log messages");
 			
 			$scope.search = null;
-			$scope.filter = null;
 			$scope.messages = [];
 			$scope.page = 1;
-			index = createIndex();
-			$scope.filterMessages();
 		};
 		
 		$scope.refresh = function () {
@@ -285,55 +148,30 @@ angular.module('syslogng-web')
 			
 			mongoLogMessageSource.fetchAll().then(function (data) {
 				$scope.messages = data;
-				$scope.filterMessages();
 			}, function (error) {
 				logger.error(error);
 			});
 		};
 		
 		// Get log messages as they come		
-		mongoLogMessageSource.messageReceived(function (data) {
-						
+		mongoLogMessageSource.messageReceived(function (data) {						
+
+			data.ID = data._id;
+
 			$scope.$apply(function (s) {
-				s.status = '';			
-				
-				// We need to block addding new messages to the list until
-				// the current search is done. If not, then the search
-				// might return unrelated results.
-				if (searching) {
-					var stopWatch = s.$watch(function () {
-						return searching;
-					}, function (newValue) {
-						if (!newValue) {
-							stopWatch();
-							s.messages.unshift(data);
-							s.filterMessages();
-						}
-					});
-				}
-				else {
-					s.messages.unshift(data);
-					s.filterMessages();
-				}
-				
+				s.status = '';							
+				s.messages.unshift(data);
 			});
 		});
 		
 		mongoLogMessageSource.fetchAll().then(function (data) {
+
+			angular.forEach(data, function (val, i) {
+				val.ID = val._id;
+			});
+
 			$scope.messages = data;
-			$scope.filterMessages();
 		}, function (error) {
 			logger.error(error);
 		});
-		
-		// Get initial list of messages
-		/*socketEventHandler.on('logs', function (data) {
-			
-			logger.info("MainController::socketEventHandler: Receiving full list of log messages (" + data.length + ")");
-			
-			$scope.$apply(function (s) {
-				s.messages = data;
-				s.filterMessages();
-			});
-		});*/
 	});
