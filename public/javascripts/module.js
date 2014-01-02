@@ -1,1 +1,1 @@
-angular.module('syslogng-web', []);
+angular.module('syslogng-web', ['ngRoute', 'ngSanitize', 'ngAnimate']);
