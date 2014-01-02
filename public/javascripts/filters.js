@@ -1,5 +1,12 @@
 angular.module('syslogng-web')
 	
+	.filter('from', function () {
+		return function (input, start) {
+			start = +start;
+			return input.slice(start);
+		};
+	})
+
 	.filter('highlight', function (logger) {
 				
 		var MIN_SCORE = 10;
