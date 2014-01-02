@@ -23,7 +23,7 @@ angular.module('syslogng-web')
 					config: function ($log, $http, $q) {
 						var deferred = $q.defer();
 						
-						$http.get('/package.json').success(function (data) {
+						$http.get('/config.json').success(function (data) {
 							deferred.resolve(data);
 						});
 						
