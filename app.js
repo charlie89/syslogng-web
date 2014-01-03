@@ -50,6 +50,8 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	
 	if (err)
 		throw err;
+		
+	console.log('connected to MongoDB database');
 	
 	var findOptions = {
 		fields: {
@@ -71,6 +73,8 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	// the syslog collection (or as configured)
 	var collection = db.collection(config.db.collection);
 
+	console.log('opening tailable cursor on ' + config.db.name + '.' + config.db.collection);
+	
 	// the neverending tailable cursor
 	var cursor = collection.find({}, extend({}, findOptions, {
 			tailable : true,
@@ -78,7 +82,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 			numberOfRetries : -1,
 		}));
 		
-	// open a stream on the neverending cursor
+	// open a stream on the neverending cursor	
 	var stream = cursor.stream();
 		
 	stream.on('data', function(data) {
@@ -91,7 +95,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 		console.error(err);
 	});
 	
-	io.sockets.on('fetchAll', function (socket) {
+	var allLogsHandler = function (socket) {
 		collection.find({}, extend({}, findOptions, {
 			sort: {
 				'DATE': -1
@@ -103,28 +107,13 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 			
 			socket.emit('logs', data);
 		});
-	});
+	};
 	
+	// listen for fetchAll request
+	io.sockets.on('fetchAll', allLogsHandler);	
 	
 	// per-connection socket events
-	io.sockets.on('connection', function (socket) {
-		
-		collection.find({}, extend({}, findOptions, {
-			sort: {
-				'DATE': -1
-			}
-		}))
-		.toArray(function (err, data) {
-			if (err) 
-				throw err;
-			
-			socket.emit('logs', data);
-		});
-		
-		socket.on('disconnect', function () {
-			console.log('socket disconnected');
-		});
-	});
+	io.sockets.on('connection', allLogsHandler);
 });
 
 // start the server
