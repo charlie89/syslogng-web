@@ -1,6 +1,64 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
+
+		$scope.fields  = [{
+			name: 'DATE',
+			description: 'Date',
+			enabled: true,
+			highlight: false
+		}, {
+			name: 'HOST',
+			description: 'Host',			
+			enabled: true,
+			highlight: true			
+		}, {
+			name: 'HOST_FROM',
+			description: 'Originating host',			
+			enabled: false,
+			highlight: true
+		}, {
+			name: 'SOURCEIP',
+			description: 'Source address',			
+			enabled: false,
+			highlight: true
+		}, {
+			name: 'PROGRAM',
+			description: 'Process',			
+			enabled: true,
+			highlight: true
+		}, {
+			name: 'PRIORITY',
+			description: 'Priority',			
+			enabled: true,
+			highlight: true
+		},  {
+			name: 'MESSAGE',
+			description: 'Log message',			
+			enabled: true,
+			highlight: true
+		}, {
+			name: 'SEQNUM',
+			description: 'Sequence',			
+			enabled: false,
+			highlight: false
+		}, {
+			name: 'TAGS',
+			description: 'Tags',			
+			enabled: false,
+			highlight: true
+		}];
+		
+		if ($cookies.syslogNgWebFields) {
+			angular.extend($scope.fields, JSON.parse($cookies.syslogNgWebFields));
+		}
+		
+		// save fields in cookies upon changes
+		$scope.$watch('fields', function (nVal) {
+			$cookies.syslogNgWebFields = JSON.stringify(nVal);
+		}, true);
+		
+		$scope.showSettings = false;
 		
 		var MAX_MESSAGES_COUNT = 1000;
 		
