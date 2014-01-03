@@ -45,6 +45,19 @@ angular.module('syslogng-web')
 					
 					addPrefixIfNeeded(args);
 					$log.warn.apply($log, args);
+				},
+				
+				debug: function () {
+					var args = _.toArray(arguments);
+					
+					addPrefixIfNeeded(args);
+					
+					if ($log.debug) {
+						$log.debug.apply($log, args);
+					}
+					else {
+						$log.info.apply($log, args);
+					}
 				}
 			};
 		};
