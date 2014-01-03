@@ -8,8 +8,5 @@
     "angular-sanitize": "~1.2.6",
     "angular-animate": "~1.2.6",
     "underscore": "~1.5.1"
-  },
-  "resolutions": {
-    "jquery": ">= 1.9.0"
   }
 }
