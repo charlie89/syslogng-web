@@ -20,18 +20,19 @@ div.space-top(ng-show="phase == phases.CONNECT")
 		thead
 			tr
 				th(ng-click="setSortField('DATE')") Date
+				th(ng-click="setSortField('HOST')") Host
 				th(ng-click="setSortField('PROGRAM')") Program
 				th(ng-click="setSortField('PRIORITY')") Priority
 				th(ng-click="setSortField('MESSAGE')") Message
 		
 		tbody
-			tr(ng-repeat="message in messages | filter:search | from:(page * perPage) | limitTo:perPage", class="{{ getClass(message) }} animate-repeat")
-				td(ng-bind="message.DATE")
-				td(ng-bind-html="message.PROGRAM | highlight:search")
-				td(ng-bind-html="message.PRIORITY | highlight:search")
-				td(ng-bind-html="message.MESSAGE | highlight:search")				
-				
-	
+			tr(ng-repeat="message in messages | filter:search | from:(page * perPage) | limitTo:perPage track by $index", class="{{ getClass(message) }} animate-repeat")
+				td(ng-bind-html="trustedHTML(message.DATE)")
+				td(ng-bind-html="trustedHTML(message.HOST, true)")
+				td(ng-bind-html="trustedHTML(message.PROGRAM, true)")
+				td(ng-bind-html="trustedHTML(message.PRIORITY, true)")
+				td(ng-bind-html="trustedHTML(message.MESSAGE, true)")
+
 	ul.pagination
 		li(ng-class="{'disabled': page == 1}")
 			a(ng-click="goToPage(1)") &laquo;&laquo; 
