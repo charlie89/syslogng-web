@@ -99,3 +99,33 @@ sudo cp -rv resources/sysinit/gentoo/* /etc
 
 Next, edit */etc/conf.d/syslogng-web* and modify the variables in there to suit your configuration. The file is
 self-explaining so no need to document it here. It only assumes you cloned **syslogng-web** into */usr/local/share*.
+
+#### Running with nginx
+
+It is possible to run syslogng-web behind a reverse proxy like nginx. Here's a configuration sample for nginx:
+
+```
+server {
+    listen your_server_ip;
+    server_name domain_name_for_syslogng_web;
+
+    access_log /path/to/access/log main;
+    error_log /path/to/error/log info;
+
+    location / {
+            proxy_pass http://localhost:3000;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+    }
+
+    location /socket.io/ {
+            proxy_pass http://localhost:3000/socket.io/;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+    }
+}
+```
+
