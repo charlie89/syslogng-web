@@ -1,8 +1,14 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
 		
 		var MAX_MESSAGES_COUNT = 1000;
+		
+		// trust html in log messages
+		$scope.trustedHTML = function (input) {
+			var html = arguments.length > 1 && arguments[1] === true ? $filter('highlight')(input, $scope.search) : input;			
+			return $sce.trustAsHtml(html);
+		};
 		 
 		$scope.pkg = pkg;
 		$scope.config = config;
