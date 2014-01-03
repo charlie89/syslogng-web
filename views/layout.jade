@@ -4,7 +4,7 @@ html
 		title syslogng-web for #{db.host}
 		meta(name="viewport", content="width=device-width,initial-scale=1")
 		link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootswatch/3.0.3/yeti/bootstrap.min.css')
-		link(rel='stylesheet', href='/components/animate.css/animate.min.css')
+		link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css')
 		link(rel='stylesheet', href='/stylesheets/style.css')
 
 	body
@@ -27,18 +27,20 @@ html
 				a(href="#{homepage}", rel="external") #{name} #{version} 
 				&mdash; released under a #{license} license
 
-		script(src='/components/jquery/jquery.min.js')
-		script(src='/components/bootstrap.css/js/bootstrap.min.js')
-		script(src='/components/angular/angular.min.js')
-		script(src='/components/angular-route/angular-route.min.js')
-		script(src='/components/angular-animate/angular-animate.min.js')
-		script(src='/components/angular-sanitize/angular-sanitize.min.js')
-		script(src='/components/underscore/underscore-min.js')
+		script(src='//cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js')
+		script(src='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.3/js/bootstrap.min.js')
+		script(src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js')		
+		script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular.min.js')
+		script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-route.min.js')
+		script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-animate.min.js')
+		script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-sanitize.min.js')
+		script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-cookies.min.js')
 		script(src='/socket.io/socket.io.js')
 		script(src='/javascripts/module.js')
 		script(src='/javascripts/services.js')
 		script(src='/javascripts/controllers.js')
 		script(src='/javascripts/filters.js')
+		script(src='/javascripts/directives.js')		
 		script(src='/javascripts/service/MongoLogMessageSource.js')
 		script(src='/javascripts/app.js')
 		
