@@ -218,10 +218,7 @@ angular.module('syslogng-web')
 		};
 		
 		// Get log messages as they come		
-		mongoLogMessageSource.messageReceived(function (data) {						
-
-			data.ID = data._id;
-
+		mongoLogMessageSource.messageReceived(function (data) {
 			$scope.$apply(function (s) {
 				s.status = '';							
 				s.messages.unshift(data);
@@ -229,11 +226,6 @@ angular.module('syslogng-web')
 		});
 		
 		mongoLogMessageSource.fetchAll().then(function (data) {
-
-			angular.forEach(data, function (val, i) {
-				val.ID = val._id;
-			});
-
 			$scope.messages = data;
 		}, function (error) {
 			logger.error(error);
