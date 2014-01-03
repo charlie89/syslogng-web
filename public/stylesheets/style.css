@@ -1,6 +1,19 @@
+body, h1, h2, h3, h4, h5 {
+	font-family: 'Roboto', 'Open Sans', 'Droid Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body, table {
+	font-size: 14px;
+}
+
+div.page-header h1 {
+	font-weight: 900;
+}
+
 footer {
 	text-align: center;
 	margin-top: 20px;
+	font-size: 85%;
 }
 
 footer .container {
