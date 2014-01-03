@@ -41,6 +41,22 @@ thead tr th {
 	margin-right: 20px;
 }
 
+/* settings button */
+.trans-toggle {
+	opacity: 0.5;
+}
+
+.trans-toggle.active {
+	opacity: 1;
+}
+
+/* ui.bootstrap fix */
+.nav, .pagination, .carousel a { cursor: pointer; }
+
+.popover.bottom .arrow {
+	left: 65%;
+}
+
 .log-info td	{ color: #999 !important; }
 .log-warning td	{ color: #c09853 !important; background-color: #fcf8e3 !important; }
 .log-notice	td	{ }
