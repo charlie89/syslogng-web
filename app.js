@@ -88,7 +88,7 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	});
 		
 	stream.on('error', function (err) {
-		console.log(err);
+		console.error(err);
 	});
 	
 	io.sockets.on('fetchAll', function (socket) {
