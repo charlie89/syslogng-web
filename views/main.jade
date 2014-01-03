@@ -26,7 +26,7 @@ div.space-top(ng-show="phase == phases.CONNECT")
 				th(ng-repeat="field in fields | filter:{enabled: true} track by field.name", ng-click="setSortField(field.name)") {{ field.description }}
 		
 		tbody
-			tr(ng-repeat="message in messages | filter:search | from:(page * perPage) | limitTo:perPage track by $index", class="{{ getClass(message) }} animate-repeat")
+			tr(ng-repeat="message in messages | filter:search | from:((page - 1) * perPage) | limitTo:perPage track by $index", class="{{ getClass(message) }} animate-repeat")
 				td(ng-repeat="field in fields | filter:{enabled: true} track by field.name", ng-bind-html="trustedHTML(message[field.name], field.highlight)")
 
 	ul.pagination
