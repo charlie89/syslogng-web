@@ -1,7 +1,7 @@
 {
   "name": "syslogng-web",
   "description": "Webapp which shows syslog-ng logs from mongodb sources",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "homepage": "https://github.com/nlaplante/syslogng-web",
   "repository": "https://github.com/nlaplante/syslogng-web.git",
   "license": "BSD",
@@ -10,11 +10,11 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "3.3.3",
+    "express": "3.3.*",
     "jade": "*",
-    "mongodb": "~1.3.11",
-    "socket.io": "~0.9.16",
-    "extend": "~1.1.3"
+    "mongodb": "*",
+    "socket.io": "*",
+    "extend": "*"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.6.0"
