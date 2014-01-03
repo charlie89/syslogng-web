@@ -142,7 +142,7 @@ angular.module('syslogng-web')
 			}
 			
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
-		}, true);
+		});
 		
 		$scope.$watch(function () {
 			return $location.search();
