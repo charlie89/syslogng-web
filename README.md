@@ -2,6 +2,8 @@
 
 Webapp which shows syslog-ng logs from mongodb sources
 
+![screenshot for 0.0.5](https://raw.github.com/nlaplante/syslogng-web/master/resources/syslogng-web-0.0.5.png "Screenshot 0.0.5")
+
 ## Installing syslogng-web
 
 Follow the instructions below to setup a fully working copy of **syslogng-web** on your host.
