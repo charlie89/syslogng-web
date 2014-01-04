@@ -14,7 +14,8 @@
     "jade": "*",
     "mongodb": "*",
     "socket.io": "*",
-    "extend": "*"
+    "extend": "*",
+    "q": "~0.9.7"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.6.0"
