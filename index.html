@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Syslogng-web : Webapp which shows syslog-ng logs from mongodb sources with realtime search capabilities" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Syslogng-web</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/nlaplante/syslogng-web">View on GitHub</a>
+
+          <h1 id="project_title">Syslogng-web</h1>
+          <h2 id="project_tagline">Webapp which shows syslog-ng logs from mongodb sources with realtime search capabilities</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/nlaplante/syslogng-web/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/nlaplante/syslogng-web/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="syslogng-web" class="anchor" href="#syslogng-web"><span class="octicon octicon-link"></span></a>syslogng-web</h1>
+
+<p>Webapp which shows syslog-ng logs from mongodb sources</p>
+
+<h2>
+<a name="installing-syslogng-web" class="anchor" href="#installing-syslogng-web"><span class="octicon octicon-link"></span></a>Installing syslogng-web</h2>
+
+<p>Follow the instructions below to setup a fully working copy of <strong>syslogng-web</strong> on your host.</p>
+
+<h3>
+<a name="configuring-syslog-ng" class="anchor" href="#configuring-syslog-ng"><span class="octicon octicon-link"></span></a>Configuring syslog-ng</h3>
+
+<p>For <strong>syslogng-web</strong> to work, it is necessary to enable MongoDB support. Ensure your syslog-ng copy
+supports MongoDB before continuing.</p>
+
+<p>You need to configure a mongodb destination and map it to a log source. Open up <em>/etc/syslog-ng/syslog-ng.conf</em> 
+and add the following lines:</p>
+
+<pre><code>destination mongodb { mongodb(); }
+log { source(src); destination(mongodb); };
+</code></pre>
+
+<p>Additional options are available for the mongodb configuration. Please read 
+<a href="https://www.balabit.com/sites/default/files/documents/syslog-ng-ose-3.3-guides/en/syslog-ng-ose-v3.3-guide-admin-en/html/configuring_destinations_mongodb.html">syslog-ng's documentation</a> 
+for further information.</p>
+
+<p>When you are done editing <em>/etc/syslog-ng/syslog-ng.conf</em>, restart the syslog-ng service.</p>
+
+<h3>
+<a name="configuring-the-database" class="anchor" href="#configuring-the-database"><span class="octicon octicon-link"></span></a>Configuring the database</h3>
+
+<p>By default the collection syslog-ng creates in MongoDB is not capped. However it needs to be for <strong>syslogng-web</strong> to work. To
+convert the existing collection to capped, issue the following statements in a mongodb shell:</p>
+
+<pre><code>use syslog
+db.runCommand({
+    convertToCapped: 'messages'
+    size: 100000
+    });
+</code></pre>
+
+<p>This will make the <em>messages</em> collection capped at 100 000 bytes. Use a size that better suits your need if you want.</p>
+
+<h3>
+<a name="installing-syslogng-web-1" class="anchor" href="#installing-syslogng-web-1"><span class="octicon octicon-link"></span></a>Installing syslogng-web</h3>
+
+<p>Next you have to install a copy of <strong>syslogng-web</strong> on your server:</p>
+
+<pre><code>git clone https://github.com/nlaplante/syslogng-web.git
+cd syslogng-web
+</code></pre>
+
+<p>Since <strong>syslogng-web</strong> is a node.js application, ensure you have the latest node.js version installed on your server. Then,
+install the dependencies:</p>
+
+<pre><code>npm install
+</code></pre>
+
+<p>Next you need to install client libraries. This is done using <a href="https://github.com/bower/bower">Bower</a>. 
+If you don't have it already, install it using:</p>
+
+<pre><code>npm install -g bower
+</code></pre>
+
+<p>Then, install the required client libraries with</p>
+
+<pre><code>bower install
+</code></pre>
+
+<h3>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h3>
+
+<p>Next, you need to tell <strong>syslogng-web</strong> how to connect to the MongoDB databases which holds the log messages. 
+By default, the mongodb driver for syslog-ng creates a database named <em>syslog</em> and stores the log messages
+in a collection called <em>messages</em>. If your setup is different, edit <strong>config.json</strong> and replace the host, 
+port and/or collection configuration properties to suit your setup.</p>
+
+<h3>
+<a name="running" class="anchor" href="#running"><span class="octicon octicon-link"></span></a>Running</h3>
+
+<p>Running <strong>syslogng-web</strong> is as simple as running any other node.js application:</p>
+
+<pre><code>node app.js
+</code></pre>
+
+<p>To test if everything is working correctly, open a brower at <em>http://your-server:3000</em>. The log messages should appear 
+shortly after. It is not necessary to reload the page to see changes, as <strong>syslogng-web</strong> uses socket.io to update
+its content as it gets logged.</p>
+
+<h4>
+<a name="rc-system-integration" class="anchor" href="#rc-system-integration"><span class="octicon octicon-link"></span></a>RC system integration</h4>
+
+<p><strong>syslogng-web</strong> can be integrated in various RC systems. Since my main development machine is Gentoo Linux based,
+I included an init script for Gentoo Linux. To install the init script:</p>
+
+<div class="highlight highlight-bash"><pre>sudo cp -rv resources/sysinit/gentoo/* /etc
+</pre></div>
+
+<p>Next, edit <em>/etc/conf.d/syslogng-web</em> and modify the variables in there to suit your configuration. The file is
+self-explaining so no need to document it here. It only assumes you cloned <strong>syslogng-web</strong> into <em>/usr/local/share</em>.</p>
+
+<h4>
+<a name="running-with-nginx" class="anchor" href="#running-with-nginx"><span class="octicon octicon-link"></span></a>Running with nginx</h4>
+
+<p>It is possible to run syslogng-web behind a reverse proxy like nginx. Here's a configuration sample for nginx:</p>
+
+<pre><code>server {
+    listen your_server_ip;
+    server_name domain_name_for_syslogng_web;
+
+    access_log /path/to/access/log main;
+    error_log /path/to/error/log info;
+
+    location / {
+            proxy_pass http://localhost:3000;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+    }
+
+    location /socket.io/ {
+            proxy_pass http://localhost:3000/socket.io/;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+    }
+}
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Syslogng-web maintained by <a href="https://github.com/nlaplante">nlaplante</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-46803844-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
