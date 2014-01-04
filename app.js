@@ -10,7 +10,8 @@ var express = require('express'),
 	sio = require('socket.io'),
 	config = require('./config'),
 	pkg = require('./package'),
-	extend = require('extend');
+	extend = require('extend'),
+	q = require('q');
 
 var app = express();
 
@@ -46,12 +47,21 @@ var connectionString = 'mongodb://' +
 	'/' + 
 	config.db.name;
 
+// This promise will be resolved when the database connection and socket.io are ready
+var subsystemUpDeferred = q.defer();
+
+var dblink, dbCursor, dbStream;
+
+console.log('initializing subsystem');
+
 mongodb.MongoClient.connect(connectionString, function(err, db) {
 	
 	if (err)
-		throw err;
+		return subsystemUpDeferred.reject(err);		
 		
-	console.log('connected to MongoDB database');
+	console.log('  ...connected to MongoDB database');
+	
+	dbLink = db;
 	
 	var findOptions = {
 		fields: {
@@ -72,51 +82,110 @@ mongodb.MongoClient.connect(connectionString, function(err, db) {
 	
 	// the syslog collection (or as configured)
 	var collection = db.collection(config.db.collection);
-
-	console.log('opening tailable cursor on ' + config.db.name + '.' + config.db.collection);
 	
-	// the neverending tailable cursor
-	var cursor = collection.find({}, extend({}, findOptions, {
-			tailable : true,
-			awaitdata : true,
-			numberOfRetries : -1,
-		}));
-		
-	// open a stream on the neverending cursor	
-	var stream = cursor.stream();
-		
-	stream.on('data', function(data) {
-		if (data) {
-			io.sockets.emit('log', data);
+	collection.options(function (err, options) {
+	
+		if (err) {
+			// fail
+			return subsystemUpDeferred.reject(err);			
 		}
-	});
 		
-	stream.on('error', function (err) {
-		console.error(err);
-	});
+		if (!options) {
+			// fail
+			return subsystemUpDeferred.reject({
+				message: 'cannot get collection properties. Please make sure it exists!'
+			});	
+		}
+		
+		if (!options.capped) {
+			// fail
+			return subsystemUpDeferred.reject({
+				message: 'collection is not capped'
+			});	
+		}
+		
+		console.log('  ...opening tailable cursor on ' + config.db.name + '.' + config.db.collection);
 	
-	var allLogsHandler = function (socket) {
-		collection.find({}, extend({}, findOptions, {
-			sort: {
-				'DATE': -1
+		// the neverending tailable cursor
+		var cursor = collection.find({}, extend({}, findOptions, {
+				tailable : true,
+				awaitdata : true,
+				numberOfRetries : -1,
+			}));
+		
+		// open a stream on the neverending cursor	
+		var stream = cursor.stream();
+		
+		dbCursor = cursor;
+		dbStream = stream;
+		
+		stream.on('data', function(data) {
+			if (data) {
+				io.sockets.emit('log', data);
 			}
-		}))
-		.toArray(function (err, data) {
-			if (err) 
-				throw err;
-			
-			socket.emit('logs', data);
 		});
-	};
 	
-	// listen for fetchAll request
-	io.sockets.on('fetchAll', allLogsHandler);	
+		var allLogsHandler = function (socket) {
+			collection.find({}, extend({}, findOptions, {
+				sort: {
+					'DATE': -1
+				}
+			}))
+			.toArray(function (err, data) {
+				if (err) 
+					throw err;
+			
+				socket.emit('logs', data);
+			});
+		};
 	
-	// per-connection socket events
-	io.sockets.on('connection', allLogsHandler);
+		// listen for fetchAll request
+		io.sockets.on('fetchAll', allLogsHandler);	
+	
+		// per-connection socket events
+		io.sockets.on('connection', allLogsHandler);
+	
+		// subsystem is ready
+		subsystemUpDeferred.resolve();
+	});
 });
+
+// shutdown listener
+server.on('close', function () {
+	
+	console.log('  ...releasing tailable cursor');
+	
+	dbCursor.close(function (err) {
+		if (err) {
+			console.error(err);
+		}
+		
+		console.log('  ...closing database connection');			
+		
+		dbLink.close(function (err, result) {			
+			// exit process
+			console.log('  ...Goodbye!');
+			process.exit(0);
+		});
+	});
+});
+
+// catch SIGTERM and SIGINT
+var shutdown = function () {
+	console.log('syslog-ng ' + pkg.version + ' shutting down');
+	server.close();
+};
+
+process.on('SIGTERM', shutdown).on('SIGINT', shutdown);
 
 // start the server
-server.listen(app.get('port'), function() {
-	console.log('syslogng-web ' + pkg.version + ' listening on port ' + app.get('port'));
+subsystemUpDeferred.promise.then(function () {
+	server.listen(app.get('port'), function() {
+		console.log('syslogng-web ' + pkg.version + ' listening on port ' + app.get('port'));
+	});
+}, function (err) {
+	console.error('An error occured while setting up syslogng-web:', err.message);
+	console.error('Bail out');
+	process.exit(1);
 });
+
