@@ -163,10 +163,17 @@ server.on('close', function () {
 		console.log('  ...closing database connection');			
 		
 		dbLink.close(function (err, result) {			
+			
+			dbStream = null;
+			dbLink = null;
+			
 			// exit process
 			console.log('  ...Goodbye!');
+			
 			process.exit(0);
 		});
+		
+		dbCursor = null;
 	});
 });
 
