@@ -50,7 +50,7 @@ var connectionString = 'mongodb://' +
 // This promise will be resolved when the database connection and socket.io are ready
 var subsystemUpDeferred = q.defer();
 
-var dblink, dbCursor, dbStream;
+var dbLink, dbCursor, dbStream;
 
 console.log('initializing subsystem');
 
