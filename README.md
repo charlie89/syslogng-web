@@ -35,7 +35,7 @@ convert the existing collection to capped, issue the following statements in a m
 ```
 use syslog
 db.runCommand({
-    convertToCapped: 'messages'
+    convertToCapped: 'messages',
     size: 100000
     });
 ```
