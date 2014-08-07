@@ -5,7 +5,7 @@
 SYSLOGNGWEB_DIR="/opt/syslogng-web"
 
 # The directory where the PID file will be stored
-SYSLOGNGWEB_RUN="/var/run"
+SYSLOGNGWEB_RUN="/var/run/syslogng-web"
 
 # The log file to use
 SYSLOGNGWEB_LOG="/var/log/syslogng-web.log"
