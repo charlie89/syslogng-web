@@ -17,7 +17,7 @@ You need to configure a mongodb destination and map it to a log source. Open up 
 and add the following lines:
 
 ```
-destination mongodb { mongodb(); }
+destination mongodb { mongodb(); };
 log { source(src); destination(mongodb); };
 ```
 
