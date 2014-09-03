@@ -1,5 +1,6 @@
 angular.module('syslogng-web')
-	.directive('popover', function () {
+	.directive('popover', ['$window', function ($window) {
+
 		return {
 			restrict: 'E',
 			transclude: true,
@@ -39,7 +40,15 @@ angular.module('syslogng-web')
 					else if (!newVal && newVal !== oldVal) {
 						scope.style.display = 'none';					
 					}
-				})
+				});
+
+				$($window).on('resize', function (e) {
+					scope.$apply(function (s) {
+						var position = trigger.offset();
+						s.style.top = position.top + trigger.height() + 5;
+						s.style.left = position.left + trigger.width() - 150;
+					});			
+				});
 			}
 		}
-	});
+	}]);
