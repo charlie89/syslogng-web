@@ -24,14 +24,14 @@ angular.module("syslogng-web")
 					if (doBind) {
 						socketEventHandler.on('log', function (message) {
 							
-							$timeout(function () {
-								messages.pop();
-								messages.push(message);
+//							$timeout(function () {
+								//messages.pop();
+								//messages.push(message);
 								
 								angular.forEach(onMessageReceivedCallbacks, function (cb) {
 									cb.apply(cb, [message]);
 								});
-							});
+//							});
 						});
 					}
 				},
@@ -39,24 +39,24 @@ angular.module("syslogng-web")
 				fetchAll: function () {
 					var deferred = $q.defer();
 					
-					if (messages.length) {
-						deferred.resolve(messages);
-					}
-					else {
+//					if (messages.length) {
+//						deferred.resolve(messages);
+//					}
+//					else {
 						
 						socketEventHandler.on('logs', function (data) {
-							$timeout(function () {
+//							$timeout(function () {
 								if (!messages.length) {
-									messages = data;
-									deferred.resolve(messages);
+									//messages = data;
+									deferred.resolve(data);
 								}
 								else {
-									deferred.resolve(messages);
+									deferred.resolve(data);
 								}
 							});
-						});
+//						});
 						
-					}
+//					}
 					
 					return deferred.promise;
 				}

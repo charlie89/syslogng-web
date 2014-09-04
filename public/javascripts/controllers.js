@@ -1,6 +1,6 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
+	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource, debounce) {
 
 		$scope.fields  = [{
 			name: 'DATE',
@@ -130,21 +130,24 @@ angular.module('syslogng-web')
 			}
 		};
 		
-		$scope.$watch("messages", function (newValue, oldValue) {
+		$scope.$watch("messages", function (newValue, oldValue) {			
+			debounce(function () {
+				if (newValue.length === oldValue.length) {
+					return;
+				}
 			
-			if (newValue.length === oldValue.length) {
-				return;
-			}
+				// Prevent a infinitely growing message list
+				if (newValue.length >= MAX_MESSAGES_COUNT) {
+					// pop out last element
+					do {
+						newValue.pop();
+					} while (newValue.length >= MAX_MESSAGES_COUNT);
+				}
 			
-			// Prevent a infinitely growing message list
-			if (newValue.length >= MAX_MESSAGES_COUNT) {
-				// pop out last element
-				do {
-					newValue.pop();
-				} while (newValue.length >= MAX_MESSAGES_COUNT);
-			}
-			
-			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
+				$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
+			})().then(function () {
+//				$scope.$apply();
+			});
 		});
 		
 		$scope.$watch(function () {
@@ -222,9 +225,15 @@ angular.module('syslogng-web')
 		
 		// Get log messages as they come		
 		mongoLogMessageSource.messageReceived(function (data) {
-			$scope.$apply(function (s) {
-				s.status = '';							
-				s.messages.unshift(data);
+			var debounced = debounce(function () {
+				logger.info('adding message', data);
+				$scope.status = '';							
+				$scope.messages.unshift(data);
+			}, 200, true);
+			
+			debounced().then(function () {
+				logger.info('debounce finished');
+				//$scope.$apply();
 			});
 		});
 		
