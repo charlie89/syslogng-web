@@ -63,9 +63,12 @@ angular.module('syslogng-web')
 		var MAX_MESSAGES_COUNT = 1000;
 		
 		// trust html in log messages
+		var REGEXP_SCRIPT_TAG = /<script>.*(<\/?script>?)?/gi;
 		$scope.trustedHTML = function (input) {
-			var html = arguments.length > 1 && arguments[1] === true ? $filter('highlight')(input, $scope.search) : input;			
-			return $sce.trustAsHtml(html);
+			var html = arguments.length > 1 && arguments[1] === true ? $filter('highlight')(input, $scope.search) : input;
+			
+			// strip out script tags
+			return $sce.trustAsHtml((html || '').replace(REGEXP_SCRIPT_TAG, ''));
 		};
 		 
 		$scope.pkg = pkg;
