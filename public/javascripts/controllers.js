@@ -1,6 +1,7 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource, debounce) {
+	.controller('MainController', ['$scope', '$location', '$timeout', '$http', '$sce', '$filter', '$q', '$cookies', 'socketEventHandler', 'logger', 'config', 'pkg', 'mongoLogMessageSource', 'debounce', 
+	function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource, debounce) {
 
 		$scope.fields  = [{
 			name: 'DATE',
@@ -242,4 +243,4 @@ angular.module('syslogng-web')
 		}, function (error) {
 			logger.error(error);
 		});
-	});
+	}]);
