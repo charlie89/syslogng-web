@@ -189,25 +189,25 @@ angular.module('syslogng-web')
 				var context = this, args = arguments;
 
 				var later = function() {
-				timeout = null;
+					timeout = null;
 
-				if(!immediate) {
-				  deferred.resolve(func.apply(context, args));
-				  deferred = $q.defer();
-				}
+					if(!immediate) {
+					  deferred.resolve(func.apply(context, args));
+					  deferred = $q.defer();
+					}
 				};
 
 				var callNow = immediate && !timeout;
 
 				if ( timeout ) {
-				$timeout.cancel(timeout);
+					$timeout.cancel(timeout);
 				}
 
 				timeout = $timeout(later, wait);
 
 				if (callNow) {
-				deferred.resolve(func.apply(context,args));
-				deferred = $q.defer();
+					deferred.resolve(func.apply(context,args));
+					deferred = $q.defer();
 				}
 
 				return deferred.promise;
