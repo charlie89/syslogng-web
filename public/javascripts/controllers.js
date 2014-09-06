@@ -51,7 +51,12 @@ angular.module('syslogng-web')
 		}];
 		
 		if ($cookies.syslogNgWebFields) {
-			angular.extend($scope.fields, JSON.parse($cookies.syslogNgWebFields));
+			try {
+				angular.extend($scope.fields, JSON.parse($cookies.syslogNgWebFields));
+			}
+			catch (e) {
+				logger.warn('could not parse active fields cookie; using defaults');
+			}
 		}
 		
 		// save fields in cookies upon changes
