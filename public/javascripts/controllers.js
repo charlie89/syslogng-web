@@ -60,8 +60,10 @@ angular.module('syslogng-web')
 		}
 		
 		// save fields in cookies upon changes
-		$scope.$watch('fields', function (nVal) {
-			$cookies.syslogNgWebFields = JSON.stringify(nVal);
+		$scope.$watch('fields', function (nVal, oVal) {
+			if (nVal && nVal != oVal) {
+				$cookies.syslogNgWebFields = JSON.stringify(nVal);
+			}
 		}, true);
 		
 		$scope.showSettings = false;
