@@ -50,7 +50,7 @@ var connectionString = 'mongodb://' +
 // This promise will be resolved when the database connection and socket.io are ready
 var subsystemUpDeferred = q.defer();
 
-var dblink, dbCursor, dbStream;
+var dbLink, dbCursor, dbStream;
 
 console.log('initializing subsystem');
 
@@ -163,10 +163,17 @@ server.on('close', function () {
 		console.log('  ...closing database connection');			
 		
 		dbLink.close(function (err, result) {			
+			
+			dbStream = null;
+			dbLink = null;
+			
 			// exit process
 			console.log('  ...Goodbye!');
+			
 			process.exit(0);
 		});
+		
+		dbCursor = null;
 	});
 });
 

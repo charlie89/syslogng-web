@@ -1,6 +1,7 @@
 angular.module('syslogng-web')
 
-	.controller('MainController', function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource) {
+	.controller('MainController', ['$scope', '$location', '$timeout', '$http', '$sce', '$filter', '$q', '$cookies', 'socketEventHandler', 'logger', 'config', 'pkg', 'mongoLogMessageSource', 'debounce', 
+	function ($scope, $location, $timeout, $http, $sce, $filter, $q, $cookies, socketEventHandler, logger, config, pkg, mongoLogMessageSource, debounce) {
 
 		$scope.fields  = [{
 			name: 'DATE',
@@ -50,22 +51,33 @@ angular.module('syslogng-web')
 		}];
 		
 		if ($cookies.syslogNgWebFields) {
-			angular.extend($scope.fields, JSON.parse($cookies.syslogNgWebFields));
+			try {
+				angular.extend($scope.fields, JSON.parse($cookies.syslogNgWebFields));
+			}
+			catch (e) {
+				logger.warn('could not parse active fields cookie; using defaults');
+			}
 		}
 		
 		// save fields in cookies upon changes
-		$scope.$watch('fields', function (nVal) {
-			$cookies.syslogNgWebFields = JSON.stringify(nVal);
+		$scope.$watch('fields', function (nVal, oVal) {
+			if (nVal && nVal != oVal) {
+				$cookies.syslogNgWebFields = JSON.stringify(nVal);
+			}
 		}, true);
 		
 		$scope.showSettings = false;
+		$scope.showIncomingMessageIndicator = false;
 		
 		var MAX_MESSAGES_COUNT = 1000;
 		
 		// trust html in log messages
+		var REGEXP_SCRIPT_TAG = /<script>.*(<\/?script>?)?/gi;
 		$scope.trustedHTML = function (input) {
-			var html = arguments.length > 1 && arguments[1] === true ? $filter('highlight')(input, $scope.search) : input;			
-			return $sce.trustAsHtml(html);
+			var html = arguments.length > 1 && arguments[1] === true ? $filter('highlight')(input, $scope.search) : input;
+			
+			// strip out script tags
+			return $sce.trustAsHtml((html || '').replace(REGEXP_SCRIPT_TAG, ''));
 		};
 		 
 		$scope.pkg = pkg;
@@ -127,12 +139,11 @@ angular.module('syslogng-web')
 			}
 		};
 		
-		$scope.$watch("messages", function (newValue, oldValue) {
-			
+		var watchMessagesDebouncer = _.debounce(function (newValue, oldValue) {
 			if (newValue.length === oldValue.length) {
 				return;
 			}
-			
+	
 			// Prevent a infinitely growing message list
 			if (newValue.length >= MAX_MESSAGES_COUNT) {
 				// pop out last element
@@ -140,8 +151,14 @@ angular.module('syslogng-web')
 					newValue.pop();
 				} while (newValue.length >= MAX_MESSAGES_COUNT);
 			}
-			
+	
 			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
+		});
+				
+		$scope.$watch("messages", function (newValue, oldValue) {		
+			if (newValue && (newValue.length || (oldValue ? oldValue.length : -1))) {	
+				watchMessagesDebouncer(newValue, oldValue);
+			}
 		});
 		
 		$scope.$watch(function () {
@@ -217,17 +234,24 @@ angular.module('syslogng-web')
 			});
 		};
 		
-		// Get log messages as they come		
+		// Get log messages as they come				
+		var messageReceivedThrottler = _.throttle(function (data) {
+			$scope.showIncomingMessageIndicator = true;
+			$scope.status = '';											
+			$scope.messages.unshift(data);
+			$scope.showIncomingMessageIndicator = false;
+			$scope.$apply();
+		}, 50);
+		
 		mongoLogMessageSource.messageReceived(function (data) {
-			$scope.$apply(function (s) {
-				s.status = '';							
-				s.messages.unshift(data);
-			});
+			messageReceivedThrottler(data);
 		});
 		
+		$scope.showIncomingMessageIndicator = true;
 		mongoLogMessageSource.fetchAll().then(function (data) {
 			$scope.messages = data;
+			$scope.showIncomingMessageIndicator = false;
 		}, function (error) {
 			logger.error(error);
 		});
-	});
+	}]);

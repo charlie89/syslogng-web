@@ -1,5 +1,6 @@
 angular.module('syslogng-web')
-	.directive('popover', function () {
+	.directive('popover', ['$window', '$document', function ($window, $document) {
+
 		return {
 			restrict: 'E',
 			transclude: true,
@@ -26,12 +27,6 @@ angular.module('syslogng-web')
 					width: 200
 				};
 				
-				$(scope.trigger).on('click', function () {
-					scope.$apply(function (s) {
-						s.visible = !s.visible;
-					});
-				});
-				
 				scope.$watch('visible', function (newVal, oldVal) {
 					if (newVal && newVal !== oldVal) {
 						scope.style.display = 'block';
@@ -39,7 +34,34 @@ angular.module('syslogng-web')
 					else if (!newVal && newVal !== oldVal) {
 						scope.style.display = 'none';					
 					}
-				})
+				});
+
+				$($window).on('resize', function (e) {
+					scope.$apply(function (s) {
+						var position = trigger.offset();
+						s.style.top = position.top + trigger.height() + 5;
+						s.style.left = position.left + trigger.width() - 150;
+					});			
+				});
+
+				$($document).on('click', function (e) {
+
+					var $target = $(e.target),
+						isTrigger = $target.is(trigger),
+						isInsidePopover = $target.parents('.popover').length,
+						hide = !isTrigger && !isInsidePopover;
+					
+					scope.$apply(function (s) {
+						s.visible = !hide;
+					});
+
+					if (hide) {
+						trigger.removeClass('active');
+					}
+					else {
+						trigger.addClass('active');
+					}
+				});
 			}
 		}
-	});
+	}]);
