@@ -22,41 +22,25 @@ angular.module("syslogng-web")
 					onMessageReceivedCallbacks.push(callback);
 					
 					if (doBind) {
-						socketEventHandler.on('log', function (message) {
-							
-//							$timeout(function () {
-								//messages.pop();
-								//messages.push(message);
-								
-								angular.forEach(onMessageReceivedCallbacks, function (cb) {
-									cb.apply(cb, [message]);
-								});
-//							});
+						socketEventHandler.on('log', function (message) {								
+							angular.forEach(onMessageReceivedCallbacks, function (cb) {
+								cb.apply(cb, [message]);
+							});
 						});
 					}
 				},
 				
 				fetchAll: function () {
 					var deferred = $q.defer();
-					
-//					if (messages.length) {
-//						deferred.resolve(messages);
-//					}
-//					else {
-						
-						socketEventHandler.on('logs', function (data) {
-//							$timeout(function () {
-								if (!messages.length) {
-									//messages = data;
-									deferred.resolve(data);
-								}
-								else {
-									deferred.resolve(data);
-								}
-							});
-//						});
-						
-//					}
+
+					socketEventHandler.on('logs', function (data) {
+						if (!messages.length) {
+							deferred.resolve(data);
+						}
+						else {
+							deferred.resolve(data);
+						}
+					});
 					
 					return deferred.promise;
 				}
