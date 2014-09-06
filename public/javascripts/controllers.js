@@ -67,6 +67,7 @@ angular.module('syslogng-web')
 		}, true);
 		
 		$scope.showSettings = false;
+		$scope.showIncomingMessageIndicator = false;
 		
 		var MAX_MESSAGES_COUNT = 1000;
 		
@@ -138,24 +139,26 @@ angular.module('syslogng-web')
 			}
 		};
 		
-		$scope.$watch("messages", function (newValue, oldValue) {			
-			debounce(function () {
-				if (newValue.length === oldValue.length) {
-					return;
-				}
-			
-				// Prevent a infinitely growing message list
-				if (newValue.length >= MAX_MESSAGES_COUNT) {
-					// pop out last element
-					do {
-						newValue.pop();
-					} while (newValue.length >= MAX_MESSAGES_COUNT);
-				}
-			
-				$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
-			})().then(function () {
-//				$scope.$apply();
-			});
+		var watchMessagesDebouncer = _.debounce(function (newValue, oldValue) {
+			if (newValue.length === oldValue.length) {
+				return;
+			}
+	
+			// Prevent a infinitely growing message list
+			if (newValue.length >= MAX_MESSAGES_COUNT) {
+				// pop out last element
+				do {
+					newValue.pop();
+				} while (newValue.length >= MAX_MESSAGES_COUNT);
+			}
+	
+			$scope.numPages = Math.ceil(newValue.length / $scope.perPage);
+		});
+				
+		$scope.$watch("messages", function (newValue, oldValue) {		
+			if (newValue && (newValue.length || (oldValue ? oldValue.length : -1))) {	
+				watchMessagesDebouncer(newValue, oldValue);
+			}
 		});
 		
 		$scope.$watch(function () {
@@ -231,22 +234,23 @@ angular.module('syslogng-web')
 			});
 		};
 		
-		// Get log messages as they come		
+		// Get log messages as they come				
+		var messageReceivedThrottler = _.throttle(function (data) {
+			$scope.showIncomingMessageIndicator = true;
+			$scope.status = '';											
+			$scope.messages.unshift(data);
+			$scope.showIncomingMessageIndicator = false;
+			$scope.$apply();
+		}, 50);
+		
 		mongoLogMessageSource.messageReceived(function (data) {
-			var debounced = debounce(function () {
-				logger.info('adding message', data);
-				$scope.status = '';							
-				$scope.messages.unshift(data);
-			}, 200, true);
-			
-			debounced().then(function () {
-				logger.info('debounce finished');
-				//$scope.$apply();
-			});
+			messageReceivedThrottler(data);
 		});
 		
+		$scope.showIncomingMessageIndicator = true;
 		mongoLogMessageSource.fetchAll().then(function (data) {
 			$scope.messages = data;
+			$scope.showIncomingMessageIndicator = false;
 		}, function (error) {
 			logger.error(error);
 		});
