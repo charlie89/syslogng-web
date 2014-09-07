@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.6.0",
-    "grunt-git-log-json": "~0.0.6"
+    "grunt-git-log-json": "~0.0.6",
+    "html-escape": "^1.0.1"
   }
 }
