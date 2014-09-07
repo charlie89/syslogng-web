@@ -1,7 +1,8 @@
 "use strict";
 
 
-var fs = require('fs');
+var fs = require('fs'),
+	htmlescape = require('html-escape');
 
 // read changelog
 console.log('reading changelog.json');
@@ -32,8 +33,8 @@ fs.readFile('../changelog.json', function (err, data) {
 		
 		if (tagData && tagData.length) {
 			// loop on each commit
-			tagData.forEach(function(commit) {
-				output += '*  ' + commit.message + ' ([' + commit.sha + '](http://github.com/nlaplante/syslogng-web/commit/' + commit.sha + '))\n';
+			tagData.forEach(function(commit) {				
+				output += '*  ' + htmlescape(commit.message) + ' ([' + commit.sha + '](http://github.com/nlaplante/syslogng-web/commit/' + commit.sha + '))\n';
 			});
 			
 		}		
