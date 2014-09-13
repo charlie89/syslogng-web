@@ -3,6 +3,8 @@
 	{
 		"host": "localhost",		
 		"port": 27017,			
+		"username": "",
+		"password": "",
 		"name": "syslog",			
 		"collection": "messages"	
 	}	
