@@ -40,12 +40,18 @@ var io = sio.listen(server);
 // Reduce log messages in production environment (WARN & ERROR)
 io.set('log level', process.env.NODE_ENV === 'production' ? 1 : 3);
 
-var connectionString = 'mongodb://' + 
-	config.db.host + 
-	':' + 
-	config.db.port + 
-	'/' + 
-	config.db.name;
+// build the connection string
+function _createConnectionString () {
+	var cs = 'mongodb://';
+	
+	if (config.db.username != '' && config.db.password != '') {
+		cs += config.db.username + ':' + config.db.password + '@';
+	}
+	
+	cs += config.db.host + ':' + config.db.port + '/' + config.db.name;
+	
+	return cs;	
+}
 
 // This promise will be resolved when the database connection and socket.io are ready
 var subsystemUpDeferred = q.defer();
@@ -54,7 +60,7 @@ var dbLink, dbCursor, dbStream;
 
 console.log('initializing subsystem');
 
-mongodb.MongoClient.connect(connectionString, function(err, db) {
+mongodb.MongoClient.connect(_createConnectionString(), function(err, db) {
 	
 	if (err)
 		return subsystemUpDeferred.reject(err);		
