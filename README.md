@@ -74,7 +74,8 @@ bower install
 Next, you need to tell **syslogng-web** how to connect to the MongoDB databases which holds the log messages. 
 By default, the mongodb driver for syslog-ng creates a database named *syslog* and stores the log messages
 in a collection called *messages*. If your setup is different, edit **config.json** and replace the host, 
-port and/or collection configuration properties to suit your setup.
+port and/or collection configuration properties to suit your setup. If your database needs authentication (>= syslog-ng 3.6),
+you need to fill the `username` and `password` options. Otherwise, leave them empty.
 
 ### Running
 
