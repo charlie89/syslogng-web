@@ -10,12 +10,13 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "bson": "^0.2.15",
     "express": "3.3.*",
+    "extend": "*",
     "jade": "*",
     "mongodb": "*",
-    "socket.io": "*",
-    "extend": "*",
-    "q": "~0.9.7"
+    "q": "~0.9.7",
+    "socket.io": "*"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.6.0",
