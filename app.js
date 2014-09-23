@@ -11,9 +11,23 @@ var express = require('express'),
 	config = require('./config'),
 	pkg = require('./package'),
 	extend = require('extend'),
-	q = require('q');
+	util = require('util'),
+	q = require('q'),
+	debug = {
+		app: require('debug')('syslogng-web:app'),
+		db: require('debug')('syslogng-web:db')
+	};
 
 var app = express();
+
+if (process.env.DEBUG && (process.env.DEBUG === '*' || process.env.DEBUG.indexOf('syslogng-web.*') !== -1 || process.env.DEBUG.indexOf('syslogng-web.app') !== -1)) {
+	setInterval(function __showProcessMemoryUsage() {
+		var memoryUsage = process.memoryUsage();
+		debug.app('process memory usage: RSS %dmb, heap (total): %dmb, heap (used): %dmb', Math.round(memoryUsage.rss / 1024 / 1024, 2), 
+			Math.round(memoryUsage.heapTotal / 1024 / 1024, 2), 
+			Math.round(memoryUsage.heapUsed / 1024 / 1024, 2));
+	}, 10000);
+}
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -26,6 +40,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' == app.get('env')) {
+	debug.app('development environment detected; using express.errorHandler');
 	app.use(express.errorHandler());
 }
 
@@ -37,9 +52,6 @@ app.get('/views/main', routes.main);
 var server = http.createServer(app);
 var io = sio.listen(server);
 
-// Reduce log messages in production environment (WARN & ERROR)
-io.set('log level', process.env.NODE_ENV === 'production' ? 1 : 3);
-
 // build the connection string
 function _createConnectionString () {
 	var cs = 'mongodb://';
@@ -49,6 +61,8 @@ function _createConnectionString () {
 	}
 	
 	cs += config.db.host + ':' + config.db.port + '/' + config.db.name;
+	
+	debug.db('created connection string: %s', cs);
 	
 	return cs;	
 }
@@ -62,8 +76,10 @@ console.log('initializing subsystem');
 
 mongodb.MongoClient.connect(_createConnectionString(), function(err, db) {
 	
-	if (err)
+	if (err) {
+		debug.db('failed to connect to database', err);
 		return subsystemUpDeferred.reject(err);		
+	}
 		
 	console.log('  ...connected to MongoDB database');
 	
@@ -87,17 +103,20 @@ mongodb.MongoClient.connect(_createConnectionString(), function(err, db) {
 	};
 	
 	// the syslog collection (or as configured)
+	debug.db('opening collection: %s', config.db.collection);
 	var collection = db.collection(config.db.collection);
 	
 	collection.options(function (err, options) {
 	
 		if (err) {
 			// fail
+			debug.db('error while fetching collection options', err);
 			return subsystemUpDeferred.reject(err);			
 		}
 		
 		if (!options) {
 			// fail
+			debug.db('no options could be retrieved from collection');
 			return subsystemUpDeferred.reject({
 				message: 'cannot get collection properties. Please make sure it exists!'
 			});	
@@ -105,6 +124,7 @@ mongodb.MongoClient.connect(_createConnectionString(), function(err, db) {
 		
 		if (!options.capped) {
 			// fail
+			debug.db('configured collection is not capped');
 			return subsystemUpDeferred.reject({
 				message: 'collection is not capped'
 			});	
@@ -132,14 +152,17 @@ mongodb.MongoClient.connect(_createConnectionString(), function(err, db) {
 		});
 	
 		var allLogsHandler = function (socket) {
+			debug.db('retrieving all documents from collection');
 			collection.find({}, extend({}, findOptions, {
 				sort: {
 					'DATE': -1
 				}
 			}))
 			.toArray(function (err, data) {
-				if (err) 
-					throw err;
+				if (err) {
+					debug.db('failed retrieving all documents from collection', err);
+					return;					
+				}
 			
 				socket.emit('logs', data);
 			});
@@ -169,14 +192,15 @@ server.on('close', function () {
 		console.log('  ...closing database connection');			
 		
 		dbLink.close(function (err, result) {			
+			if (err) {
+				console.error(err);
+			}
 			
 			dbStream = null;
 			dbLink = null;
 			
 			// exit process
 			console.log('  ...Goodbye!');
-			
-			process.exit(0);
 		});
 		
 		dbCursor = null;
@@ -187,6 +211,7 @@ server.on('close', function () {
 var shutdown = function () {
 	console.log('syslog-ng ' + pkg.version + ' shutting down');
 	server.close();
+	process.exit(0);
 };
 
 process.on('SIGTERM', shutdown).on('SIGINT', shutdown);
