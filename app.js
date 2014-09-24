@@ -11,7 +11,13 @@ var express = require('express'),
 	config = require('./config'),
 	pkg = require('./package'),
 	extend = require('extend'),
-	q = require('q');
+	util = require('util'),
+	q = require('q'),
+	debug = {
+		app: require('debug')('syslogng-web:app'),
+		db: require('debug')('syslogng-web:db'),
+		socket: require('debug')('syslogng-web:socket')
+	};
 
 var app = express();
 
@@ -37,150 +43,16 @@ app.get('/views/main', routes.main);
 var server = http.createServer(app);
 var io = sio.listen(server);
 
-// Reduce log messages in production environment (WARN & ERROR)
-io.set('log level', process.env.NODE_ENV === 'production' ? 1 : 3);
-
-// build the connection string
-function _createConnectionString () {
-	var cs = 'mongodb://';
-	
-	if (config.db.username != '' && config.db.password != '') {
-		cs += config.db.username + ':' + config.db.password + '@';
-	}
-	
-	cs += config.db.host + ':' + config.db.port + '/' + config.db.name;
-	
-	return cs;	
-}
 
 // This promise will be resolved when the database connection and socket.io are ready
 var subsystemUpDeferred = q.defer();
 
-var dbLink, dbCursor, dbStream;
-
 console.log('initializing subsystem');
 
-mongodb.MongoClient.connect(_createConnectionString(), function(err, db) {
-	
-	if (err)
-		return subsystemUpDeferred.reject(err);		
-		
-	console.log('  ...connected to MongoDB database');
-	
-	dbLink = db;
-	
-	var findOptions = {
-		fields: {
-			'PROGRAM': 1,
-			'PRIORITY': 1,
-			'MESSAGE': 1,
-			'DATE': 1,
-			'HOST': 1,
-			'HOST_FROM': 1,
-			'SOURCEIP': 1,
-			'SEQNUM': 1,
-			'TAGS': 1
-		},
-		sort: {
-			$natural: 1
-		}
-	};
-	
-	// the syslog collection (or as configured)
-	var collection = db.collection(config.db.collection);
-	
-	collection.options(function (err, options) {
-	
-		if (err) {
-			// fail
-			return subsystemUpDeferred.reject(err);			
-		}
-		
-		if (!options) {
-			// fail
-			return subsystemUpDeferred.reject({
-				message: 'cannot get collection properties. Please make sure it exists!'
-			});	
-		}
-		
-		if (!options.capped) {
-			// fail
-			return subsystemUpDeferred.reject({
-				message: 'collection is not capped'
-			});	
-		}
-		
-		console.log('  ...opening tailable cursor on ' + config.db.name + '.' + config.db.collection);
-	
-		// the neverending tailable cursor
-		var cursor = collection.find({}, extend({}, findOptions, {
-				tailable : true,
-				awaitdata : true,
-				numberOfRetries : -1,
-			}));
-		
-		// open a stream on the neverending cursor	
-		var stream = cursor.stream();
-		
-		dbCursor = cursor;
-		dbStream = stream;
-		
-		stream.on('data', function(data) {
-			if (data) {
-				io.sockets.emit('log', data);
-			}
-		});
-	
-		var allLogsHandler = function (socket) {
-			collection.find({}, extend({}, findOptions, {
-				sort: {
-					'DATE': -1
-				}
-			}))
-			.toArray(function (err, data) {
-				if (err) 
-					throw err;
-			
-				socket.emit('logs', data);
-			});
-		};
-	
-		// listen for fetchAll request
-		io.sockets.on('fetchAll', allLogsHandler);	
-	
-		// per-connection socket events
-		io.sockets.on('connection', allLogsHandler);
-	
-		// subsystem is ready
-		subsystemUpDeferred.resolve();
-	});
-});
-
-// shutdown listener
-server.on('close', function () {
-	
-	console.log('  ...releasing tailable cursor');
-	
-	dbCursor.close(function (err) {
-		if (err) {
-			console.error(err);
-		}
-		
-		console.log('  ...closing database connection');			
-		
-		dbLink.close(function (err, result) {			
-			
-			dbStream = null;
-			dbLink = null;
-			
-			// exit process
-			console.log('  ...Goodbye!');
-			
-			process.exit(0);
-		});
-		
-		dbCursor = null;
-	});
+require('./lib/socket')(config, io, debug).then(function () {
+	subsystemUpDeferred.resolve();
+}, function (err) {
+	subsystemUpDeferred.reject(err);
 });
 
 // catch SIGTERM and SIGINT
