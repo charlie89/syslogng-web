@@ -31,18 +31,7 @@ angular.module("syslogng-web")
 				},
 				
 				fetchAll: function () {
-					var deferred = $q.defer();
-
-					socketEventHandler.on('logs', function (data) {
-						if (!messages.length) {
-							deferred.resolve(data);
-						}
-						else {
-							deferred.resolve(data);
-						}
-					});
-					
-					return deferred.promise;
+					socketEventHandler.emit('fetchAll');
 				}
 			};
 		};

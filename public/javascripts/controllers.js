@@ -246,12 +246,17 @@ angular.module('syslogng-web')
 		mongoLogMessageSource.messageReceived(function (data) {
 			messageReceivedThrottler(data);
 		});
+
+		mongoLogMessageSource.fetchAll();
 		
 		$scope.showIncomingMessageIndicator = true;
+
+		/*
 		mongoLogMessageSource.fetchAll().then(function (data) {
 			$scope.messages = data;
 			$scope.showIncomingMessageIndicator = false;
 		}, function (error) {
 			logger.error(error);
 		});
+		*/
 	}]);
