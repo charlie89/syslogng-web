@@ -21,6 +21,15 @@ var express = require('express'),
 
 var app = express();
 
+if (process.env.DEBUG && (process.env.DEBUG === '*' || process.env.DEBUG.indexOf('syslogng-web.*') !== -1 || process.env.DEBUG.indexOf('syslogng-web.app') !== -1)) {
+	setInterval(function __showProcessMemoryUsage() {
+		var memoryUsage = process.memoryUsage();
+		debug.app('process memory usage: RSS %dmb, heap (total): %dmb, heap (used): %dmb', Math.round(memoryUsage.rss / 1024 / 1024, 2),
+			Math.round(memoryUsage.heapTotal / 1024 / 1024, 2),
+			Math.round(memoryUsage.heapUsed / 1024 / 1024, 2));
+	}, 10000);
+}
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
