@@ -65,7 +65,7 @@ console.log('initializing subsystem');
 var subsystemUpDeferred = q.defer();
 
 db.connect().then((function () {
-	require('./lib/socket')(config, io);
+	require('./lib/socket')(io, db);
 	subsystemUpDeferred.resolve();
 }, function (err) {
 	subsystemUpDeferred.reject(err);
