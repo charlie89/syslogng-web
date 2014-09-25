@@ -10,7 +10,10 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "3.3.*",
+    "express": "~4.0.0",
+    "morgan": "~1.0.0",
+    "body-parser": "~1.0.0",
+    "method-override": "~1.0.0",
     "extend": "*",
     "jade": "*",
     "lodash": "^2.4.1",
