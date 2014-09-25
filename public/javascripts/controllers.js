@@ -226,11 +226,15 @@ angular.module('syslogng-web')
 		$scope.refresh = function () {
 			
 			logger.info("refreshing log messages");
+
+			$scope.showIncomingMessageIndicator = true;
 			
-			mongoLogMessageSource.fetchAll().then(function (data) {
-				$scope.messages = data;
+			mongoLogMessageSource.fetchAll().then(function (response) {
+				$scope.messages = response.data || [];
+				$scope.showIncomingMessageIndicator = false;
 			}, function (error) {
 				logger.error(error);
+				$scope.showIncomingMessageIndicator = false;
 			});
 		};
 		
@@ -242,21 +246,21 @@ angular.module('syslogng-web')
 			$scope.showIncomingMessageIndicator = false;
 			$scope.$apply();
 		}, 50);
-		
-		mongoLogMessageSource.messageReceived(function (data) {
-			messageReceivedThrottler(data);
-		});
 
-		mongoLogMessageSource.fetchAll();
-		
+		// start by fetching first page of existing logs
 		$scope.showIncomingMessageIndicator = true;
+		mongoLogMessageSource.fetchAll($scope.page, $scope.perPage).then(function (response) {
 
-		/*
-		mongoLogMessageSource.fetchAll().then(function (data) {
-			$scope.messages = data;
+			$scope.messages = response.data || [];
 			$scope.showIncomingMessageIndicator = false;
-		}, function (error) {
-			logger.error(error);
+
+			// we have our first page, register websocket callback
+			mongoLogMessageSource.messageReceived(function (data) {
+				messageReceivedThrottler(data);
+			});
+		}, function (response) {
+			logger.error(response);
+			$scope.messages = [];
+			$scope.showIncomingMessageIndicator = false;
 		});
-		*/
 	}]);

@@ -4,7 +4,7 @@ angular.module("syslogng-web")
 	.provider('mongoLogMessageSource', function () {
 		
 		
-		this.$get = function (socketEventHandler, logger, $q, $timeout) {
+		this.$get = function (socketEventHandler, logger, $q, $timeout, $http) {
 		
 			var messages = [];
 			var onMessageReceivedCallbacks = [];
@@ -30,8 +30,11 @@ angular.module("syslogng-web")
 					}
 				},
 				
-				fetchAll: function () {
-					socketEventHandler.emit('fetchAll');
+				fetchAll: function (page, count) {
+					return $http.get('/api/messages', {
+						from: (page - 1) * count,
+						count: count
+					});
 				}
 			};
 		};
