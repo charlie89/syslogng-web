@@ -2,6 +2,14 @@
 
 Webapp which shows syslog-ng logs from mongodb sources
 
+## Looking for maintainer
+
+I do not work on syslogng-web anymore. I moved to a systemd-backed system which 
+offers web tools which do exactly what syslogng-web does, but using different
+backends and tools.
+
+Feel free to fork this!
+
 ![screenshot for 0.0.5](https://raw.github.com/nlaplante/syslogng-web/master/resources/syslogng-web-0.0.5.png "Screenshot 0.0.5")
 
 ## Installing syslogng-web
