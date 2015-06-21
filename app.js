@@ -2,13 +2,20 @@
  * Module dependencies.
  */
 
+//get correct config path either config.default.json or config.json if it exists
+var configpath='./config.default.json';
+var fs = require('fs');
+if (fs.existsSync('./config.json')) {
+	configpath = './config.json';
+}
+
 var express = require('express'), 
 	routes = require('./routes'), 
 	http = require('http'), 
 	path = require('path'), 
 	mongodb = require('mongodb'), 
 	sio = require('socket.io'),
-	config = require('./config'),
+	config = require(configpath),
 	pkg = require('./package'),
 	extend = require('extend'),
 	q = require('q');
